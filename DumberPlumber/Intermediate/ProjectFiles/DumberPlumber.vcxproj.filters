@@ -1,0 +1,69 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <None Include="..\..\DumberPlumber.uproject" />
+    <Filter Include="Source">
+      <UniqueIdentifier>{9B9745D8-D261-46F6-8CC1-762D1B53D88E}</UniqueIdentifier>
+    </Filter>
+    <None Include="..\..\Source\DumberPlumber.Target.cs">
+      <Filter>Source</Filter>
+    </None>
+    <None Include="..\..\Source\DumberPlumberEditor.Target.cs">
+      <Filter>Source</Filter>
+    </None>
+    <Filter Include="Config">
+      <UniqueIdentifier>{3FDBF875-52A1-403E-8B7E-226D16EF0375}</UniqueIdentifier>
+    </Filter>
+    <None Include="..\..\Config\DefaultEditor.ini">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="..\..\Config\DefaultEditorPerProjectUserSettings.ini">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="..\..\Config\DefaultEngine.ini">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="..\..\Config\DefaultGame.ini">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="..\..\Config\DefaultInput.ini">
+      <Filter>Config</Filter>
+    </None>
+    <Filter Include="Source\DumberPlumber">
+      <UniqueIdentifier>{23A9A5D7-19B7-40CA-8818-B8404620D093}</UniqueIdentifier>
+    </Filter>
+    <None Include="..\..\Source\DumberPlumber\DumberPlumber.Build.cs">
+      <Filter>Source\DumberPlumber</Filter>
+    </None>
+    <ClCompile Include="..\..\Source\DumberPlumber\DumberPlumber.cpp">
+      <Filter>Source\DumberPlumber</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\DumberPlumber\DumberPlumber.h">
+      <Filter>Source\DumberPlumber</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\DumberPlumber\DumberPlumberCharacter.cpp">
+      <Filter>Source\DumberPlumber</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\DumberPlumber\DumberPlumberCharacter.h">
+      <Filter>Source\DumberPlumber</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\DumberPlumber\DumberPlumberGameMode.cpp">
+      <Filter>Source\DumberPlumber</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\DumberPlumber\DumberPlumberGameMode.h">
+      <Filter>Source\DumberPlumber</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\DumberPlumber\DumberPlumberHUD.cpp">
+      <Filter>Source\DumberPlumber</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\DumberPlumber\DumberPlumberHUD.h">
+      <Filter>Source\DumberPlumber</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\DumberPlumber\DumberPlumberProjectile.cpp">
+      <Filter>Source\DumberPlumber</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\DumberPlumber\DumberPlumberProjectile.h">
+      <Filter>Source\DumberPlumber</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
