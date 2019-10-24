@@ -1,9 +1,0 @@
-C:\dumber-plumber\DumberPlumber\Intermediate\Build\Win64\UE4Editor\Development\DumberPlumber\Definitions.DumberPlumber.h
-C:\Program Files\Epic Games\UE_4.22\Engine\Source\Runtime\CoreUObject\Public\UObject/GeneratedCppIncludes.h
-C:\Program Files\Epic Games\UE_4.22\Engine\Source\Runtime\CoreUObject\Public\UObject/MetaData.h
-C:\dumber-plumber\DumberPlumber\Source\DumberPlumber/DumberPlumberCharacter.h
-C:\Program Files\Epic Games\UE_4.22\Engine\Source\Runtime\Engine\Classes\GameFramework/Character.h
-C:\Program Files\Epic Games\UE_4.22\Engine\Source\Runtime\Engine\Classes\GameFramework/RootMotionSource.h
-C:\Program Files\Epic Games\UE_4.22\Engine\Intermediate\Build\Win64\UE4Editor\Inc\Engine\RootMotionSource.generated.h
-C:\Program Files\Epic Games\UE_4.22\Engine\Intermediate\Build\Win64\UE4Editor\Inc\Engine\Character.generated.h
-c:\dumber-plumber\dumberplumber\intermediate\build\win64\ue4editor\inc\dumberplumber\DumberPlumberCharacter.generated.h
