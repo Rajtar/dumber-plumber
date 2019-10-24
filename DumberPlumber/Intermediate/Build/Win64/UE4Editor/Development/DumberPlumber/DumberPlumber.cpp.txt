@@ -1,2 +1,0 @@
-C:\dumber-plumber\DumberPlumber\Intermediate\Build\Win64\UE4Editor\Development\DumberPlumber\Definitions.DumberPlumber.h
-c:\dumber-plumber\dumberplumber\source\dumberplumber\DumberPlumber.h
