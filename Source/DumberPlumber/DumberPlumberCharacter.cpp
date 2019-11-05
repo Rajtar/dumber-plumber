@@ -82,6 +82,10 @@ ADumberPlumberCharacter::ADumberPlumberCharacter()
 
 	// Uncomment the following line to turn motion controllers on by default:
 	//bUsingMotionControllers = true;
+
+	SetReplicates(true);
+	SetReplicateMovement(true);
+	FP_Gun->SetIsReplicated(true);
 }
 
 void ADumberPlumberCharacter::BeginPlay()
@@ -140,6 +144,29 @@ void ADumberPlumberCharacter::SetupPlayerInputComponent(class UInputComponent* P
 
 void ADumberPlumberCharacter::OnFire()
 {
+	
+	OnServerFire();
+	
+	// try and play the sound if specified
+	if (FireSound != NULL)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
+	}
+
+	// try and play a firing animation if specified
+	if (FireAnimation != NULL)
+	{
+		// Get the animation object for the arms mesh
+		UAnimInstance* AnimInstance = Mesh1P->GetAnimInstance();
+		if (AnimInstance != NULL)
+		{
+			AnimInstance->Montage_Play(FireAnimation, 1.f);
+		}
+	}
+}
+
+void ADumberPlumberCharacter::OnServerFire_Implementation()
+{
 	// try and fire a projectile
 	if (ProjectileClass != NULL)
 	{
@@ -167,23 +194,11 @@ void ADumberPlumberCharacter::OnFire()
 			}
 		}
 	}
+}
 
-	// try and play the sound if specified
-	if (FireSound != NULL)
-	{
-		UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
-	}
-
-	// try and play a firing animation if specified
-	if (FireAnimation != NULL)
-	{
-		// Get the animation object for the arms mesh
-		UAnimInstance* AnimInstance = Mesh1P->GetAnimInstance();
-		if (AnimInstance != NULL)
-		{
-			AnimInstance->Montage_Play(FireAnimation, 1.f);
-		}
-	}
+bool ADumberPlumberCharacter::OnServerFire_Validate()
+{
+	return true;
 }
 
 void ADumberPlumberCharacter::OnResetVR()

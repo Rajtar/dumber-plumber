@@ -5,6 +5,7 @@
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "DumberPlumberCharacter.h"
+#include "DumberPlumberProjectile.h"
 
 // Sets default values for this component's properties
 ABlackHole::ABlackHole()
@@ -48,7 +49,7 @@ void ABlackHole::Tick(float DeltaTime)
 	for(int32 i = 0; i<OverlappingComponents.Num(); i++)
 	{
 		UPrimitiveComponent* PrimitiveComponent = OverlappingComponents[i];
-		if(PrimitiveComponent && PrimitiveComponent->IsSimulatingPhysics())
+		if(PrimitiveComponent && PrimitiveComponent->IsSimulatingPhysics() /*&& !Cast<ADumberPlumberProjectile>(PrimitiveComponent)*/)
 		{
 			const float SphereRadius = OuterSphereComponent->GetScaledSphereRadius();
 			const float ForceStrength = -2000;
