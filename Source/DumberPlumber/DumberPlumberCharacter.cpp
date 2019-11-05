@@ -85,7 +85,6 @@ ADumberPlumberCharacter::ADumberPlumberCharacter()
 
 	SetReplicates(true);
 	SetReplicateMovement(true);
-	FP_Gun->SetIsReplicated(true);
 }
 
 void ADumberPlumberCharacter::BeginPlay()
@@ -312,4 +311,17 @@ bool ADumberPlumberCharacter::EnableTouchscreenMovement(class UInputComponent* P
 	}
 	
 	return false;
+}
+
+void ADumberPlumberCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (!IsLocallyControlled())
+	{
+		FRotator NewRot = FirstPersonCameraComponent->RelativeRotation;
+		NewRot.Pitch = RemoteViewPitch * 360.0f / 255.0f;
+
+		FirstPersonCameraComponent->SetRelativeRotation(NewRot);
+	}
 }
