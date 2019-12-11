@@ -2,6 +2,7 @@
 
 #include "DumberPlumberCharacter.h"
 #include "DumberPlumberProjectile.h"
+#include "DumberPlumberPipeActor.h"
 #include "Animation/AnimInstance.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -173,7 +174,6 @@ bool ADumberPlumberCharacter::OnServerFire_Validate()
 {
 	return true;
 }
-
 
 void ADumberPlumberCharacter::MoveForward(float Value)
 {

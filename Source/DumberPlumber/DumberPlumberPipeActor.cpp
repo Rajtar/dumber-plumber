@@ -9,12 +9,11 @@ ADumberPlumberPipeActor::ADumberPlumberPipeActor()
 	RootComponent = StaticMesh;
 	StaticMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-	Capsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Capsule"));
-	Capsule->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	Capsule->SetCollisionResponseToAllChannels(ECR_Block);
-	// Capsule->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
-	Capsule->SetupAttachment(StaticMesh);
-
+	CapsuleCollider = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Capsule"));
+	CapsuleCollider->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	CapsuleCollider->SetCollisionResponseToAllChannels(ECR_Block);
+	CapsuleCollider->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	CapsuleCollider->SetupAttachment(StaticMesh);
 }
 
 void ADumberPlumberPipeActor::BeginPlay()
@@ -30,7 +29,23 @@ void ADumberPlumberPipeActor::NotifyHit(UPrimitiveComponent* MyComp, AActor* Oth
 	ADumberPlumberCharacter* PlayerCharacter = Cast<ADumberPlumberCharacter>(Other);
 	if (PlayerCharacter)
 	{
-		StaticMesh->SetSimulatePhysics(false);
-		StaticMesh->AttachToComponent(PlayerCharacter->GetRootComponent(), FAttachmentTransformRules(EAttachmentRule::KeepWorld, false));
+		PickUpPipe(PlayerCharacter);
 	}
+}
+
+void ADumberPlumberPipeActor::PickUpPipe(ADumberPlumberCharacter* character)
+{
+	character->grabbedPipe = this;
+	UE_LOG(LogTemp, Warning, TEXT("Pipe has been picked up"));
+	StaticMesh->SetSimulatePhysics(false);
+	CapsuleCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	StaticMesh->AttachToComponent(character->GetRootComponent(), FAttachmentTransformRules(EAttachmentRule::KeepWorld, false));
+}
+
+void ADumberPlumberPipeActor::DropPipe()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Pipe has been dropped"));
+	StaticMesh->SetSimulatePhysics(true);
+	CapsuleCollider->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	StaticMesh->DetachFromComponent(FDetachmentTransformRules(EDetachmentRule::KeepRelative, false));
 }

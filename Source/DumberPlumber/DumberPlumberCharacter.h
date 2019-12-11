@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "DumberPlumberCharacter.generated.h"
 
+class ADumberPlumberPipeActor;
 class UInputComponent;
 
 UCLASS(config=Game)
@@ -59,6 +60,9 @@ public:
 	/** AnimMontage to play each time we fire */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	class UAnimMontage* FireAnimation;
+
+	UPROPERTY(BlueprintReadOnly, Category = Gameplay)
+	ADumberPlumberPipeActor* grabbedPipe;
 
 protected:
 	
