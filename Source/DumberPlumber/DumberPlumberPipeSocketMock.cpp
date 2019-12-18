@@ -2,6 +2,7 @@
 #include "Components/BoxComponent.h"
 #include "DumberPlumberPipeActor.h"
 #include "Components/StaticMeshComponent.h"
+#include "Particles/ParticleSystemComponent.h"
 
 ADumberPlumberPipeSocketMock::ADumberPlumberPipeSocketMock()
 {
@@ -16,6 +17,15 @@ ADumberPlumberPipeSocketMock::ADumberPlumberPipeSocketMock()
 }
 
 
+void ADumberPlumberPipeSocketMock::DeactivateParticles()
+{
+	GetComponents<UParticleSystemComponent>(ParticleSystems);
+	for (UParticleSystemComponent* particleSystem : ParticleSystems) {
+		UE_LOG(LogTemp, Warning, TEXT("DISABLING PARTICLE!!!"));
+		particleSystem->Deactivate();
+	}
+}
+
 void ADumberPlumberPipeSocketMock::NotifyActorBeginOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorBeginOverlap(OtherActor);
@@ -26,6 +36,8 @@ void ADumberPlumberPipeSocketMock::NotifyActorBeginOverlap(AActor* OtherActor)
 		StaticMesh->SetVisibility(true);
 		pipe->SetActorHiddenInGame(true);
 		BoxCollider->SetCollisionResponseToAllChannels(ECR_Block);
+
+		DeactivateParticles();
 	}
 }
 

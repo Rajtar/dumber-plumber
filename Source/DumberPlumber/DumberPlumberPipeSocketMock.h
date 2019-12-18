@@ -5,6 +5,7 @@
 #include "DumberPlumberPipeSocketMock.generated.h"
 
 class UBoxComponent;
+class UParticleSystemComponent;
 
 UCLASS()
 class DUMBERPLUMBER_API ADumberPlumberPipeSocketMock : public AActor
@@ -22,5 +23,10 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UBoxComponent* BoxCollider;
 
+	TArray<UParticleSystemComponent*> ParticleSystems;
+
 	virtual void BeginPlay() override;
+
+private:
+	void DeactivateParticles();
 };
