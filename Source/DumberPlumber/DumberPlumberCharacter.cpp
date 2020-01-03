@@ -93,7 +93,8 @@ void ADumberPlumberCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	//Attach gun mesh component to Skeleton, doing it here because the skeleton is not yet created in the constructor
-	FP_Gun->AttachToComponent(Mesh1P, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
+	FP_Gun->AttachToComponent(Mesh1P, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true),
+	                          TEXT("GripPoint"));
 
 	Mesh1P->SetHiddenInGame(false, true);
 }
@@ -113,6 +114,8 @@ void ADumberPlumberCharacter::SetupPlayerInputComponent(class UInputComponent* P
 	// Bind fire event
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ADumberPlumberCharacter::OnFire);
 
+	PlayerInputComponent->BindAction("Grab", IE_Pressed, this, &ADumberPlumberCharacter::UseFocusedInteractable);
+
 	// Bind movement events
 	PlayerInputComponent->BindAxis("MoveForward", this, &ADumberPlumberCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ADumberPlumberCharacter::MoveRight);
@@ -124,6 +127,19 @@ void ADumberPlumberCharacter::SetupPlayerInputComponent(class UInputComponent* P
 	PlayerInputComponent->BindAxis("TurnRate", this, &ADumberPlumberCharacter::TurnAtRate);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &ADumberPlumberCharacter::LookUpAtRate);
+}
+
+void ADumberPlumberCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	if (!IsLocallyControlled())
+	{
+		FRotator NewRot = FirstPersonCameraComponent->RelativeRotation;
+		NewRot.Pitch = RemoteViewPitch * 360.0f / 255.0f;
+
+		FirstPersonCameraComponent->SetRelativeRotation(NewRot);
+	}
+	UpdateFocusedInteractable();
 }
 
 void ADumberPlumberCharacter::OnFire()
@@ -166,6 +182,7 @@ void ADumberPlumberCharacter::OnServerFire_Implementation()
 
 			// spawn the projectile at the muzzle
 			World->SpawnActor<ADumberPlumberProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
+
 		}
 	}
 }
@@ -174,6 +191,7 @@ bool ADumberPlumberCharacter::OnServerFire_Validate()
 {
 	return true;
 }
+
 
 void ADumberPlumberCharacter::MoveForward(float Value)
 {
@@ -205,31 +223,42 @@ void ADumberPlumberCharacter::LookUpAtRate(float Rate)
 	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
 }
 
-//bool ADumberPlumberCharacter::EnableTouchscreenMovement(class UInputComponent* PlayerInputComponent)
-//{
-//	if (FPlatformMisc::SupportsTouchInput() || GetDefault<UInputSettings>()->bUseMouseForTouch)
-//	{
-//		PlayerInputComponent->BindTouch(EInputEvent::IE_Pressed, this, &ADumberPlumberCharacter::BeginTouch);
-//		PlayerInputComponent->BindTouch(EInputEvent::IE_Released, this, &ADumberPlumberCharacter::EndTouch);
-//
-//		//Commenting this out to be more consistent with FPS BP template.
-//		//PlayerInputComponent->BindTouch(EInputEvent::IE_Repeat, this, &ADumberPlumberCharacter::TouchUpdate);
-//		return true;
-//	}
-//	
-//	return false;
-//}
-
-void ADumberPlumberCharacter::Tick(float DeltaTime)
+void ADumberPlumberCharacter::UpdateFocusedInteractable()
 {
-	Super::Tick(DeltaTime);
-
-	if (!IsLocallyControlled())
+	if (Controller && Controller->IsLocalPlayerController())
 	{
-		FRotator NewRot = FirstPersonCameraComponent->RelativeRotation;
-		NewRot.Pitch = RemoteViewPitch * 360.0f / 255.0f;
-
-		FirstPersonCameraComponent->SetRelativeRotation(NewRot);
+		FVector CameraPosition;
+		FRotator CameraRotation;
+		Controller->GetPlayerViewPoint(CameraPosition, CameraRotation);
+		
+		const FVector StartTrace = CameraPosition;
+		const FVector Direction = CameraRotation.Vector();
+		const FVector EndTrace = StartTrace + Direction * MaxInteractionDistance;
+		FHitResult HitResult;
+		
+		if (GetWorld()->LineTraceSingleByChannel(HitResult, StartTrace, EndTrace, ECC_Visibility))
+		{
+			IInteractable* Interactable = Cast<IInteractable>(HitResult.GetActor());
+			if (Interactable)
+			{
+				FocusedInteractable = Interactable;
+				return;
+			}
+		}
+		FocusedInteractable = nullptr;
 	}
 }
 
+void ADumberPlumberCharacter::UseFocusedInteractable()
+{
+	if (grabbedPipe)
+	{
+		grabbedPipe->DropPipe();
+		grabbedPipe = nullptr;
+		return;
+	}
+	if (FocusedInteractable)
+	{
+		FocusedInteractable->Interact(this);
+	}
+}

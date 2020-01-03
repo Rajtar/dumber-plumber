@@ -9,10 +9,9 @@ ADumberPlumberPipeActor::ADumberPlumberPipeActor()
 	RootComponent = StaticMesh;
 	StaticMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-	CapsuleCollider = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Capsule"));
+	CapsuleCollider = CreateDefaultSubobject<UCapsuleComponent>(TEXT("CapsuleCollider"));
 	CapsuleCollider->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	CapsuleCollider->SetCollisionResponseToAllChannels(ECR_Block);
-	CapsuleCollider->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 	CapsuleCollider->SetupAttachment(StaticMesh);
 }
 
@@ -22,27 +21,29 @@ void ADumberPlumberPipeActor::BeginPlay()
 }
 
 
-void ADumberPlumberPipeActor::NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, UPrimitiveComponent* OtherComp,
-	bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)
+void ADumberPlumberPipeActor::Interact(ACharacter* User)
 {
-	Super::NotifyHit(MyComp, Other, OtherComp, bSelfMoved, HitLocation, HitNormal, NormalImpulse, Hit);
-	ADumberPlumberCharacter* PlayerCharacter = Cast<ADumberPlumberCharacter>(Other);
+	PickUpPipe(User);
+}
+
+void ADumberPlumberPipeActor::DisplayPrompt(UCanvas* Canvas, ACharacter* User)
+{
+}
+
+void ADumberPlumberPipeActor::PickUpPipe(ACharacter* character)
+{
+	ADumberPlumberCharacter* PlayerCharacter = Cast<ADumberPlumberCharacter>(character);
 	if (PlayerCharacter)
 	{
-		PickUpPipe(PlayerCharacter);
+		UE_LOG(LogTemp, Warning, TEXT("Pipe has been picked up"));
+		PlayerCharacter->grabbedPipe = this;
+		StaticMesh->SetSimulatePhysics(false);
+		CapsuleCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		StaticMesh->AttachToComponent(character->GetRootComponent(), FAttachmentTransformRules(EAttachmentRule::KeepWorld, false));
 	}
 }
 
-void ADumberPlumberPipeActor::PickUpPipe(ADumberPlumberCharacter* character)
-{
-	character->grabbedPipe = this;
-	UE_LOG(LogTemp, Warning, TEXT("Pipe has been picked up"));
-	StaticMesh->SetSimulatePhysics(false);
-	CapsuleCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	StaticMesh->AttachToComponent(character->GetRootComponent(), FAttachmentTransformRules(EAttachmentRule::KeepWorld, false));
-}
-
-void ADumberPlumberPipeActor::DropPipe()
+void ADumberPlumberPipeActor::DropPipe() const
 {
 	UE_LOG(LogTemp, Warning, TEXT("Pipe has been dropped"));
 	StaticMesh->SetSimulatePhysics(true);

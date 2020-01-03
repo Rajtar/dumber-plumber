@@ -2,23 +2,25 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Interactable.h"
 #include "DumberPlumberPipeActor.generated.h"
 
 class ADumberPlumberCharacter;
 class UCapsuleComponent;
 
 UCLASS()
-class DUMBERPLUMBER_API ADumberPlumberPipeActor : public AActor
+class DUMBERPLUMBER_API ADumberPlumberPipeActor : public AActor, public IInteractable
 {
 	GENERATED_BODY()
 	
 public:	
 	ADumberPlumberPipeActor();
-	virtual void NotifyHit(class UPrimitiveComponent* MyComp, AActor* Other, class UPrimitiveComponent* OtherComp,
-	                       bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse,
-	                       const FHitResult& Hit) override;
 
-	void DropPipe();
+	void Interact(ACharacter * User) override;
+
+	void DisplayPrompt(UCanvas * Canvas, ACharacter * User) override;
+	
+	void DropPipe() const;
 
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
@@ -30,6 +32,6 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	void PickUpPipe(ADumberPlumberCharacter* character);
+	void PickUpPipe(ACharacter* character);
 
 };

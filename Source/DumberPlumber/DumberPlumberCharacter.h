@@ -7,6 +7,7 @@
 #include "DumberPlumberCharacter.generated.h"
 
 class ADumberPlumberPipeActor;
+class IInteractable;
 class UInputComponent;
 
 UCLASS(config=Game)
@@ -61,9 +62,16 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	class UAnimMontage* FireAnimation;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	float MaxInteractionDistance;
+
 	UPROPERTY(BlueprintReadOnly, Category = Gameplay)
 	ADumberPlumberPipeActor* grabbedPipe;
 
+	IInteractable* FocusedInteractable;
+
+	void Tick(float DeltaSeconds) override;
+	
 protected:
 	
 	/** Fires a projectile. */
@@ -89,6 +97,10 @@ protected:
 	 * @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
 	 */
 	void LookUpAtRate(float Rate);
+
+	void UpdateFocusedInteractable();
+
+	void UseFocusedInteractable();
 	
 protected:
 	// APawn interface
@@ -100,7 +112,5 @@ public:
 	FORCEINLINE class USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
 	/** Returns FirstPersonCameraComponent subobject **/
 	FORCEINLINE class UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
-
-	virtual void Tick(float DeltaTime) override;
 };
 
