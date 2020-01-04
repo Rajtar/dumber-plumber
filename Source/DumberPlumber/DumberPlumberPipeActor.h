@@ -18,7 +18,9 @@ public:
 
 	void Interact(ACharacter * User) override;
 
-	void DisplayPrompt(UCanvas * Canvas, ACharacter * User) override;
+	void MarkAsFocused() override;
+
+	void UnmarkAsFocused() override;
 	
 	void DropPipe() const;
 

@@ -23,9 +23,7 @@ class DUMBERPLUMBER_API IInteractable
 
 public:
 	
-	// This function will be called when the user uses the object
 	virtual void Interact(ACharacter* User);
-	
-	// This function is called each frame from the hud, it should be used to put messages to the screen, like the USE prompt in UDK
-	virtual void DisplayPrompt(UCanvas* Canvas, ACharacter* User);
+	virtual void MarkAsFocused();
+	virtual void UnmarkAsFocused();
 };

@@ -242,8 +242,13 @@ void ADumberPlumberCharacter::UpdateFocusedInteractable()
 			if (Interactable)
 			{
 				FocusedInteractable = Interactable;
+				FocusedInteractable->MarkAsFocused();
 				return;
 			}
+		}
+		if (FocusedInteractable)
+		{
+			FocusedInteractable->UnmarkAsFocused();
 		}
 		FocusedInteractable = nullptr;
 	}

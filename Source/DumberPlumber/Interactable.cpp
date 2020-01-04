@@ -4,6 +4,10 @@ void IInteractable::Interact(ACharacter* User)
 {
 }
 
-void IInteractable::DisplayPrompt(UCanvas* Canvas, ACharacter* User)
+void IInteractable::MarkAsFocused()
+{
+}
+
+void IInteractable::UnmarkAsFocused()
 {
 }

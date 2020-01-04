@@ -26,8 +26,14 @@ void ADumberPlumberPipeActor::Interact(ACharacter* User)
 	PickUpPipe(User);
 }
 
-void ADumberPlumberPipeActor::DisplayPrompt(UCanvas* Canvas, ACharacter* User)
+void ADumberPlumberPipeActor::MarkAsFocused()
 {
+	StaticMesh->SetRenderCustomDepth(true);
+}
+
+void ADumberPlumberPipeActor::UnmarkAsFocused()
+{
+	StaticMesh->SetRenderCustomDepth(false);
 }
 
 void ADumberPlumberPipeActor::PickUpPipe(ACharacter* character)
@@ -35,7 +41,6 @@ void ADumberPlumberPipeActor::PickUpPipe(ACharacter* character)
 	ADumberPlumberCharacter* PlayerCharacter = Cast<ADumberPlumberCharacter>(character);
 	if (PlayerCharacter)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Pipe has been picked up"));
 		PlayerCharacter->grabbedPipe = this;
 		StaticMesh->SetSimulatePhysics(false);
 		CapsuleCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -45,7 +50,6 @@ void ADumberPlumberPipeActor::PickUpPipe(ACharacter* character)
 
 void ADumberPlumberPipeActor::DropPipe() const
 {
-	UE_LOG(LogTemp, Warning, TEXT("Pipe has been dropped"));
 	StaticMesh->SetSimulatePhysics(true);
 	CapsuleCollider->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	StaticMesh->DetachFromComponent(FDetachmentTransformRules(EDetachmentRule::KeepRelative, false));
