@@ -36,15 +36,15 @@ void ADumberPlumberPipeActor::UnmarkAsFocused()
 	StaticMesh->SetRenderCustomDepth(false);
 }
 
-void ADumberPlumberPipeActor::PickUpPipe(ACharacter* character)
+void ADumberPlumberPipeActor::PickUpPipe(ACharacter* Character)
 {
-	ADumberPlumberCharacter* PlayerCharacter = Cast<ADumberPlumberCharacter>(character);
+	ADumberPlumberCharacter* PlayerCharacter = Cast<ADumberPlumberCharacter>(Character);
 	if (PlayerCharacter)
 	{
 		PlayerCharacter->grabbedPipe = this;
 		StaticMesh->SetSimulatePhysics(false);
 		CapsuleCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		StaticMesh->AttachToComponent(character->GetRootComponent(), FAttachmentTransformRules(EAttachmentRule::KeepWorld, false));
+		StaticMesh->AttachToComponent(Character->GetRootComponent(), FAttachmentTransformRules(EAttachmentRule::KeepWorld, false));
 	}
 }
 

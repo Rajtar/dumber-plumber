@@ -34,6 +34,6 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	void PickUpPipe(ACharacter* character);
+	void PickUpPipe(ACharacter* Character);
 
 };
