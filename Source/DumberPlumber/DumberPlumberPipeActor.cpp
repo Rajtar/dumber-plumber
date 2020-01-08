@@ -41,7 +41,7 @@ void ADumberPlumberPipeActor::PickUpPipe(ACharacter* Character)
 	ADumberPlumberCharacter* PlayerCharacter = Cast<ADumberPlumberCharacter>(Character);
 	if (PlayerCharacter)
 	{
-		PlayerCharacter->grabbedPipe = this;
+		PlayerCharacter->GrabbedPipe = this;
 		StaticMesh->SetSimulatePhysics(false);
 		CapsuleCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		StaticMesh->AttachToComponent(Character->GetRootComponent(), FAttachmentTransformRules(EAttachmentRule::KeepWorld, false));

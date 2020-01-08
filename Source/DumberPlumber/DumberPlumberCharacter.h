@@ -66,7 +66,7 @@ public:
 	float MaxInteractionDistance;
 
 	UPROPERTY(BlueprintReadOnly, Category = Gameplay)
-	ADumberPlumberPipeActor* grabbedPipe;
+	ADumberPlumberPipeActor* GrabbedPipe;
 
 	IInteractable* FocusedInteractable;
 

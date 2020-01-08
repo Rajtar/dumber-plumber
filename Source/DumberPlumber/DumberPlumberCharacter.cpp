@@ -256,10 +256,10 @@ void ADumberPlumberCharacter::UpdateFocusedInteractable()
 
 void ADumberPlumberCharacter::UseFocusedInteractable()
 {
-	if (grabbedPipe)
+	if (GrabbedPipe)
 	{
-		grabbedPipe->DropPipe();
-		grabbedPipe = nullptr;
+		GrabbedPipe->DropPipe();
+		GrabbedPipe = nullptr;
 		return;
 	}
 	if (FocusedInteractable)
