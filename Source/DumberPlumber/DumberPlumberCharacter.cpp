@@ -8,6 +8,8 @@
 #include "Components/InputComponent.h"
 #include "GameFramework/InputSettings.h"
 #include "Kismet/GameplayStatics.h"
+#include "MotionControllerComponent.h"
+#include "XRMotionControllerBase.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
 
@@ -31,7 +33,7 @@ ADumberPlumberCharacter::ADumberPlumberCharacter()
 
 	// Create a mesh component that will be used when being viewed from a '1st person' view (when controlling this pawn)
 	Mesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"));
-	Mesh1P->SetOnlyOwnerSee(true);
+	Mesh1P->SetOnlyOwnerSee(false);
 	Mesh1P->SetupAttachment(FirstPersonCameraComponent);
 	Mesh1P->bCastDynamicShadow = false;
 	Mesh1P->CastShadow = false;
@@ -40,7 +42,7 @@ ADumberPlumberCharacter::ADumberPlumberCharacter()
 
 	// Create a gun mesh component
 	FP_Gun = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FP_Gun"));
-	FP_Gun->SetOnlyOwnerSee(true);			// only the owning player will see this mesh
+	FP_Gun->SetOnlyOwnerSee(false);			// only the owning player will see this mesh
 	FP_Gun->bCastDynamicShadow = false;
 	FP_Gun->CastShadow = false;
 	// FP_Gun->SetupAttachment(Mesh1P, TEXT("GripPoint"));
@@ -57,25 +59,25 @@ ADumberPlumberCharacter::ADumberPlumberCharacter()
 	// are set in the derived blueprint asset named MyCharacter to avoid direct content references in C++.
 
 	// Create VR Controllers.
-	R_MotionController = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("R_MotionController"));
-	R_MotionController->MotionSource = FXRMotionControllerBase::RightHandSourceId;
-	R_MotionController->SetupAttachment(RootComponent);
-	L_MotionController = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("L_MotionController"));
-	L_MotionController->SetupAttachment(RootComponent);
+	//R_MotionController = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("R_MotionController"));
+	//R_MotionController->MotionSource = FXRMotionControllerBase::RightHandSourceId;
+	//R_MotionController->SetupAttachment(RootComponent);
+	//L_MotionController = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("L_MotionController"));
+	//L_MotionController->SetupAttachment(RootComponent);
 
-	// Create a gun and attach it to the right-hand VR controller.
-	// Create a gun mesh component
-	VR_Gun = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("VR_Gun"));
-	VR_Gun->SetOnlyOwnerSee(true);			// only the owning player will see this mesh
-	VR_Gun->bCastDynamicShadow = false;
-	VR_Gun->CastShadow = false;
-	VR_Gun->SetupAttachment(R_MotionController);
-	VR_Gun->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
+	//// Create a gun and attach it to the right-hand VR controller.
+	//// Create a gun mesh component
+	//VR_Gun = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("VR_Gun"));
+	//VR_Gun->SetOnlyOwnerSee(true);			// only the owning player will see this mesh
+	//VR_Gun->bCastDynamicShadow = false;
+	//VR_Gun->CastShadow = false;
+	//VR_Gun->SetupAttachment(R_MotionController);
+	//VR_Gun->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
 
-	VR_MuzzleLocation = CreateDefaultSubobject<USceneComponent>(TEXT("VR_MuzzleLocation"));
-	VR_MuzzleLocation->SetupAttachment(VR_Gun);
-	VR_MuzzleLocation->SetRelativeLocation(FVector(0.000004, 53.999992, 10.000000));
-	VR_MuzzleLocation->SetRelativeRotation(FRotator(0.0f, 90.0f, 0.0f));		// Counteract the rotation of the VR gun model.
+	//VR_MuzzleLocation = CreateDefaultSubobject<USceneComponent>(TEXT("VR_MuzzleLocation"));
+	//VR_MuzzleLocation->SetupAttachment(VR_Gun);
+	//VR_MuzzleLocation->SetRelativeLocation(FVector(0.000004, 53.999992, 10.000000));
+	//VR_MuzzleLocation->SetRelativeRotation(FRotator(0.0f, 90.0f, 0.0f));		// Counteract the rotation of the VR gun model.
 
 	// Uncomment the following line to turn motion controllers on by default:
 	//bUsingMotionControllers = true;
@@ -125,7 +127,6 @@ void ADumberPlumberCharacter::SetupPlayerInputComponent(class UInputComponent* P
 
 void ADumberPlumberCharacter::OnFire()
 {
-	
 	OnServerFire();
 	
 	// try and play the sound if specified
@@ -203,20 +204,20 @@ void ADumberPlumberCharacter::LookUpAtRate(float Rate)
 	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
 }
 
-bool ADumberPlumberCharacter::EnableTouchscreenMovement(class UInputComponent* PlayerInputComponent)
-{
-	if (FPlatformMisc::SupportsTouchInput() || GetDefault<UInputSettings>()->bUseMouseForTouch)
-	{
-		PlayerInputComponent->BindTouch(EInputEvent::IE_Pressed, this, &ADumberPlumberCharacter::BeginTouch);
-		PlayerInputComponent->BindTouch(EInputEvent::IE_Released, this, &ADumberPlumberCharacter::EndTouch);
-
-		//Commenting this out to be more consistent with FPS BP template.
-		//PlayerInputComponent->BindTouch(EInputEvent::IE_Repeat, this, &ADumberPlumberCharacter::TouchUpdate);
-		return true;
-	}
-	
-	return false;
-}
+//bool ADumberPlumberCharacter::EnableTouchscreenMovement(class UInputComponent* PlayerInputComponent)
+//{
+//	if (FPlatformMisc::SupportsTouchInput() || GetDefault<UInputSettings>()->bUseMouseForTouch)
+//	{
+//		PlayerInputComponent->BindTouch(EInputEvent::IE_Pressed, this, &ADumberPlumberCharacter::BeginTouch);
+//		PlayerInputComponent->BindTouch(EInputEvent::IE_Released, this, &ADumberPlumberCharacter::EndTouch);
+//
+//		//Commenting this out to be more consistent with FPS BP template.
+//		//PlayerInputComponent->BindTouch(EInputEvent::IE_Repeat, this, &ADumberPlumberCharacter::TouchUpdate);
+//		return true;
+//	}
+//	
+//	return false;
+//}
 
 void ADumberPlumberCharacter::Tick(float DeltaTime)
 {
