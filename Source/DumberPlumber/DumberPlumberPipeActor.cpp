@@ -5,6 +5,9 @@
 
 ADumberPlumberPipeActor::ADumberPlumberPipeActor()
 {
+	SetReplicates(true);
+	SetReplicateMovement(true);
+	
 	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
 	RootComponent = StaticMesh;
 	StaticMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
