@@ -65,6 +65,9 @@ protected:
 	/** Fires a projectile. */
 	void OnFire();
 
+	UFUNCTION(Server, Reliable, WithValidation)
+	void OnServerFire();
+  
 	/** Handles moving forward/backward */
 	void MoveForward(float Val);
 
@@ -94,5 +97,6 @@ public:
 	/** Returns FirstPersonCameraComponent subobject **/
 	FORCEINLINE class UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
 
+	virtual void Tick(float DeltaTime) override;
 };
 

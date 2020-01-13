@@ -52,6 +52,36 @@ ADumberPlumberCharacter::ADumberPlumberCharacter()
 
 	// Default offset from the character location for projectiles to spawn
 	GunOffset = FVector(100.0f, 0.0f, 10.0f);
+
+	// Note: The ProjectileClass and the skeletal mesh/anim blueprints for Mesh1P, FP_Gun, and VR_Gun 
+	// are set in the derived blueprint asset named MyCharacter to avoid direct content references in C++.
+
+	// Create VR Controllers.
+	R_MotionController = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("R_MotionController"));
+	R_MotionController->MotionSource = FXRMotionControllerBase::RightHandSourceId;
+	R_MotionController->SetupAttachment(RootComponent);
+	L_MotionController = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("L_MotionController"));
+	L_MotionController->SetupAttachment(RootComponent);
+
+	// Create a gun and attach it to the right-hand VR controller.
+	// Create a gun mesh component
+	VR_Gun = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("VR_Gun"));
+	VR_Gun->SetOnlyOwnerSee(true);			// only the owning player will see this mesh
+	VR_Gun->bCastDynamicShadow = false;
+	VR_Gun->CastShadow = false;
+	VR_Gun->SetupAttachment(R_MotionController);
+	VR_Gun->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
+
+	VR_MuzzleLocation = CreateDefaultSubobject<USceneComponent>(TEXT("VR_MuzzleLocation"));
+	VR_MuzzleLocation->SetupAttachment(VR_Gun);
+	VR_MuzzleLocation->SetRelativeLocation(FVector(0.000004, 53.999992, 10.000000));
+	VR_MuzzleLocation->SetRelativeRotation(FRotator(0.0f, 90.0f, 0.0f));		// Counteract the rotation of the VR gun model.
+
+	// Uncomment the following line to turn motion controllers on by default:
+	//bUsingMotionControllers = true;
+
+	SetReplicates(true);
+	SetReplicateMovement(true);
 }
 
 void ADumberPlumberCharacter::BeginPlay()
@@ -95,6 +125,29 @@ void ADumberPlumberCharacter::SetupPlayerInputComponent(class UInputComponent* P
 
 void ADumberPlumberCharacter::OnFire()
 {
+	
+	OnServerFire();
+	
+	// try and play the sound if specified
+	if (FireSound != NULL)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
+	}
+
+	// try and play a firing animation if specified
+	if (FireAnimation != NULL)
+	{
+		// Get the animation object for the arms mesh
+		UAnimInstance* AnimInstance = Mesh1P->GetAnimInstance();
+		if (AnimInstance != NULL)
+		{
+			AnimInstance->Montage_Play(FireAnimation, 1.f);
+		}
+	}
+}
+
+void ADumberPlumberCharacter::OnServerFire_Implementation()
+{
 	// try and fire a projectile
 	if (ProjectileClass != NULL)
 	{
@@ -113,23 +166,11 @@ void ADumberPlumberCharacter::OnFire()
 			World->SpawnActor<ADumberPlumberProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
 		}
 	}
+}
 
-	// try and play the sound if specified
-	if (FireSound != NULL)
-	{
-		UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
-	}
-
-	// try and play a firing animation if specified
-	if (FireAnimation != NULL)
-	{
-		// Get the animation object for the arms mesh
-		UAnimInstance* AnimInstance = Mesh1P->GetAnimInstance();
-		if (AnimInstance != NULL)
-		{
-			AnimInstance->Montage_Play(FireAnimation, 1.f);
-		}
-	}
+bool ADumberPlumberCharacter::OnServerFire_Validate()
+{
+	return true;
 }
 
 void ADumberPlumberCharacter::MoveForward(float Value)
@@ -161,3 +202,32 @@ void ADumberPlumberCharacter::LookUpAtRate(float Rate)
 	// calculate delta for this frame from the rate information
 	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
 }
+
+bool ADumberPlumberCharacter::EnableTouchscreenMovement(class UInputComponent* PlayerInputComponent)
+{
+	if (FPlatformMisc::SupportsTouchInput() || GetDefault<UInputSettings>()->bUseMouseForTouch)
+	{
+		PlayerInputComponent->BindTouch(EInputEvent::IE_Pressed, this, &ADumberPlumberCharacter::BeginTouch);
+		PlayerInputComponent->BindTouch(EInputEvent::IE_Released, this, &ADumberPlumberCharacter::EndTouch);
+
+		//Commenting this out to be more consistent with FPS BP template.
+		//PlayerInputComponent->BindTouch(EInputEvent::IE_Repeat, this, &ADumberPlumberCharacter::TouchUpdate);
+		return true;
+	}
+	
+	return false;
+}
+
+void ADumberPlumberCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (!IsLocallyControlled())
+	{
+		FRotator NewRot = FirstPersonCameraComponent->RelativeRotation;
+		NewRot.Pitch = RemoteViewPitch * 360.0f / 255.0f;
+
+		FirstPersonCameraComponent->SetRelativeRotation(NewRot);
+	}
+}
+
