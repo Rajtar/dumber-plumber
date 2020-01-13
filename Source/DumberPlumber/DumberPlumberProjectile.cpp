@@ -3,7 +3,9 @@
 #include "DumberPlumberProjectile.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "BlackHole.h"
+
 
 ADumberPlumberProjectile::ADumberPlumberProjectile()
 {
@@ -11,7 +13,7 @@ ADumberPlumberProjectile::ADumberPlumberProjectile()
 	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
 	CollisionComp->InitSphereRadius(5.0f);
 	CollisionComp->BodyInstance.SetCollisionProfileName("Projectile");
-	CollisionComp->OnComponentHit.AddDynamic(this, &ADumberPlumberProjectile::OnHit);		// set up a notification for when this component hits something blocking
+	//CollisionComp->OnComponentHit.AddDynamic(this, &ADumberPlumberProjectile::OnHit);		// set up a notification for when this component hits something blocking
 
 	// Players can't walk on it
 	CollisionComp->SetWalkableSlopeOverride(FWalkableSlopeOverride(WalkableSlope_Unwalkable, 0.f));
@@ -31,20 +33,6 @@ ADumberPlumberProjectile::ADumberPlumberProjectile()
 	// Die after 3 seconds by default
 	InitialLifeSpan = 3.0f;
 
-	SetReplicates(true);
-	SetReplicateMovement(true);
-}
-
-void ADumberPlumberProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
-{
-	// Only add impulse and destroy projectile if we hit a physics
-	if ((OtherActor != NULL) && (OtherActor != this) && (OtherComp != NULL) && OtherComp->IsSimulatingPhysics() /*&& !Cast<ABlackHole>(OtherComp)*/)
-	{
-		OtherComp->AddImpulseAtLocation(GetVelocity() * 100.0f, GetActorLocation());
-
-		if (Role == ROLE_Authority)
-		{
-			Destroy();
-		}
-	}
+	//SetReplicates(true);
+	//SetReplicateMovement(true);
 }

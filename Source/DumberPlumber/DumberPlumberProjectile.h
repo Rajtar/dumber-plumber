@@ -22,9 +22,16 @@ class ADumberPlumberProjectile : public AActor
 public:
 	ADumberPlumberProjectile();
 
-	/** called when projectile hits something */
-	UFUNCTION()
-	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+	///** called when projectile hits something */
+	//UFUNCTION()
+	//void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
+	//UFUNCTION()
+	//void Explode();
+
+	/** Sound to play each time we fire */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	class UParticleSystem* Particle;
 
 	/** Returns CollisionComp subobject **/
 	FORCEINLINE class USphereComponent* GetCollisionComp() const { return CollisionComp; }
