@@ -6,8 +6,6 @@
 #include "GameFramework/Actor.h"
 #include "Weapon.generated.h"
 
-class USkeletalMeshComponent;
-
 UCLASS()
 class DUMBERPLUMBER_API AWeapon : public AActor
 {
@@ -19,10 +17,13 @@ public:
 
 	void Fire();
 
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerFire();
+
 protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	USkeletalMeshComponent* Mesh;
+	class USkeletalMeshComponent* Mesh;
 
 	/** Sound to play each time we fire */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)

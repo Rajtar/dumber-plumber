@@ -22,6 +22,8 @@ class ADumberPlumberCharacter : public ACharacter
 public:
 	ADumberPlumberCharacter();
 
+	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 protected:
 	virtual void BeginPlay();
 
@@ -33,7 +35,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
 	class UHealthComponent* HealthComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
+	UPROPERTY(Replicated)
 	class AWeapon* Weapon;
 
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
@@ -55,6 +57,12 @@ public:
 	ADumberPlumberPipeActor* GrabbedPipe;
 
 	IInteractable* FocusedInteractable;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	FName WeaponAttachSocketName;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	TSubclassOf<AActor> StarterWeaponClass;
 
 	void Tick(float DeltaSeconds) override;
 	

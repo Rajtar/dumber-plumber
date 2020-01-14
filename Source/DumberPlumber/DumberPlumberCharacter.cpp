@@ -12,6 +12,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "HealthComponent.h"
 #include "Weapon.h"
+#include "Net/UnrealNetwork.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
 
@@ -28,6 +29,7 @@ ADumberPlumberCharacter::ADumberPlumberCharacter()
 	BaseLookUpRate = 45.f;
 
 	Died = false;
+	WeaponAttachSocketName = "GripPoint";
 
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
 
@@ -56,6 +58,19 @@ void ADumberPlumberCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	Mesh1P->SetHiddenInGame(false, true);
+
+	if (Role == ROLE_Authority)
+	{
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+		Weapon = GetWorld()->SpawnActor<AWeapon>(StarterWeaponClass, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+		if (Weapon)
+		{
+			Weapon->SetOwner(this);
+			Weapon->AttachToComponent(GetMesh1P(), FAttachmentTransformRules::SnapToTargetIncludingScale, WeaponAttachSocketName);
+		}
+	}
 
 	HealthComponent->OnHealthChanged.AddDynamic(this, &ADumberPlumberCharacter::OnHealthChanged);
 }
@@ -244,4 +259,11 @@ void ADumberPlumberCharacter::UseFocusedInteractable()
 	{
 		FocusedInteractable->Interact(this);
 	}
+}
+
+void ADumberPlumberCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ADumberPlumberCharacter, Weapon);
 }

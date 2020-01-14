@@ -11,10 +11,18 @@ AWeapon::AWeapon()
 	RootComponent = Mesh;
 
 	MuzzleSocketName = "Muzzle";
+
+	SetReplicates(true);
 }
 
 void AWeapon::Fire()
 {
+	if (Role < ROLE_Authority)
+	{
+		ServerFire();
+		return;
+	}
+
 	if (FireSound != NULL)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
@@ -31,4 +39,14 @@ void AWeapon::Fire()
 		auto projectile = GetWorld()->SpawnActor<AActor>(ProjectileClass, MuzzleLocation, MuzzleRotation, SpawnParams);
 		projectile->SetOwner(this);
 	}
+}
+
+void AWeapon::ServerFire_Implementation()
+{
+	Fire();
+}
+
+bool AWeapon::ServerFire_Validate()
+{
+	return true;
 }
