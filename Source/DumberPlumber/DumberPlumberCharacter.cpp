@@ -234,4 +234,5 @@ void ADumberPlumberCharacter::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ADumberPlumberCharacter, Weapon);
+	DOREPLIFETIME(ADumberPlumberCharacter, Died);
 }

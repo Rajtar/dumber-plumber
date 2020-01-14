@@ -22,8 +22,6 @@ class ADumberPlumberCharacter : public ACharacter
 public:
 	ADumberPlumberCharacter();
 
-	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
 protected:
 	virtual void BeginPlay();
 
@@ -100,7 +98,7 @@ protected:
 
 	void UseFocusedInteractable();
 
-	UPROPERTY(BlueprintReadOnly, Category="Player")
+	UPROPERTY(Replicated, BlueprintReadOnly, Category="Player")
 	bool Died;
 	
 protected:
