@@ -1,5 +1,6 @@
 // Copyright 1998-2019 Epic Games, Inc. All Rights Reserved.
 
+#include "GameFramework/PawnMovementComponent.h"
 #include "DumberPlumberCharacter.h"
 #include "DumberPlumberProjectile.h"
 #include "DumberPlumberPipeActor.h"
@@ -9,8 +10,7 @@
 #include "Components/InputComponent.h"
 #include "GameFramework/InputSettings.h"
 #include "Kismet/GameplayStatics.h"
-#include "MotionControllerComponent.h"
-#include "XRMotionControllerBase.h"
+#include "HealthComponent.h"
 #include "Weapon.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
@@ -26,6 +26,10 @@ ADumberPlumberCharacter::ADumberPlumberCharacter()
 	// set our turn rates for input
 	BaseTurnRate = 45.f;
 	BaseLookUpRate = 45.f;
+
+	Died = false;
+
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
 
 	// Create a CameraComponent	
 	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
@@ -52,6 +56,8 @@ void ADumberPlumberCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	Mesh1P->SetHiddenInGame(false, true);
+
+	HealthComponent->OnHealthChanged.AddDynamic(this, &ADumberPlumberCharacter::OnHealthChanged);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -99,11 +105,11 @@ void ADumberPlumberCharacter::Tick(float DeltaSeconds)
 
 void ADumberPlumberCharacter::OnFire()
 {
-	if (weapon == nullptr)
+	if (Weapon == nullptr)
 	{
 		return;
 	}
-	weapon->Fire();
+	Weapon->Fire();
 	//OnServerFire();
 	//
 	//// try and play the sound if specified
@@ -117,6 +123,22 @@ void ADumberPlumberCharacter::OnFire()
 		{
 			AnimInstance->Montage_Play(FireAnimation, 1.f);
 		}
+	}
+}
+void ADumberPlumberCharacter::OnHealthChanged(UHealthComponent* HealthComp, float Health, float HealthDelta,
+	const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
+{
+	UE_LOG(LogTemp, Warning, TEXT("OnHealthChanged: %s"), *FString::SanitizeFloat(Health));
+	if (Health <= 0 && !Died)
+	{
+		Died = true;
+
+		//GetCharacterMovement()->StopActiveMovement();
+		GetMovementComponent()->StopMovementImmediately();
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		DetachFromControllerPendingDestroy();
+		//SetLifeSpan(10.0f);
 	}
 }
 //

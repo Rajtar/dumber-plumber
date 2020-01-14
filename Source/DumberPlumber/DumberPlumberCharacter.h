@@ -30,8 +30,11 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Mesh)
 	class USkeletalMeshComponent* Mesh1P;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
+	class UHealthComponent* HealthComponent;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
-	class AWeapon* weapon;
+	class AWeapon* Weapon;
 
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
@@ -60,6 +63,10 @@ protected:
 	///** Fires a projectile. */
 	void OnFire();
 
+	UFUNCTION()
+	void OnHealthChanged(UHealthComponent* HealthComp, float Health, float HealthDelta,
+		const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
+
 	//UFUNCTION(Server, Reliable, WithValidation)
 	//void OnServerFire();
   
@@ -84,6 +91,9 @@ protected:
 	void UpdateFocusedInteractable();
 
 	void UseFocusedInteractable();
+
+	UPROPERTY(BlueprintReadOnly, Category="Player")
+	bool Died;
 	
 protected:
 	// APawn interface
