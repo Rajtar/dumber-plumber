@@ -18,15 +18,15 @@ AWeapon::AWeapon()
 
 void AWeapon::Fire()
 {
+	if (FireSound != NULL)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
+	}
+
 	if (Role < ROLE_Authority)
 	{
 		ServerFire();
 		return;
-	}
-
-	if (FireSound != NULL)
-	{
-		UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
 	}
 
 	if (ProjectileClass)

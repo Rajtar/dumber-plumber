@@ -28,6 +28,11 @@ void UHealthComponent::BeginPlay()
 	Health = DefaultHealth;
 }
 
+void UHealthComponent::HealthChanged()
+{
+	UE_LOG(LogTemp, Warning, TEXT("HealthChanged"));
+}
+
 void UHealthComponent::HandleTakeAnyDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, 
 	class AController* InstigatedBy, AActor* DamageCauser)
 {

@@ -107,6 +107,9 @@ protected:
 	// End of APawn interface
 
 public:
+	UFUNCTION(BlueprintImplementableEvent, Category="Health")
+	void HealthInd();
+
 	/** Returns Mesh1P subobject **/
 	FORCEINLINE class USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
 	/** Returns FirstPersonCameraComponent subobject **/
