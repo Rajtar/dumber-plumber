@@ -12,7 +12,7 @@ class ADumberPlumberProjectile : public AActor
 	GENERATED_BODY()
 
 	/** Sphere collision component */
-	UPROPERTY(VisibleDefaultsOnly, Category=Projectile)
+	UPROPERTY(VisibleAnywhere, Category=Projectile)
 	class USphereComponent* CollisionComp;
 
 	/** Projectile movement component */
@@ -21,13 +21,6 @@ class ADumberPlumberProjectile : public AActor
 
 public:
 	ADumberPlumberProjectile();
-
-	///** called when projectile hits something */
-	//UFUNCTION()
-	//void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
-
-	//UFUNCTION()
-	//void Explode();
 
 	/** Sound to play each time we fire */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
