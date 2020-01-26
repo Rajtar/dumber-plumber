@@ -13,6 +13,7 @@
 #include "HealthComponent.h"
 #include "Weapon.h"
 #include "Net/UnrealNetwork.h"
+#include "DumberPlumberGameMode.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
 
@@ -48,6 +49,8 @@ ADumberPlumberCharacter::ADumberPlumberCharacter()
 	Mesh1P->RelativeRotation = FRotator(1.9f, -19.19f, 5.2f);
 	Mesh1P->RelativeLocation = FVector(-0.5f, -4.4f, -155.7f);
 
+	//Team = ETeamEnum::UNDEFINED;
+
 	SetReplicates(true);
 	SetReplicateMovement(true);
 }
@@ -61,6 +64,8 @@ void ADumberPlumberCharacter::BeginPlay()
 
 	if (Role == ROLE_Authority)
 	{
+		DetermineTeam();
+
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
@@ -69,8 +74,10 @@ void ADumberPlumberCharacter::BeginPlay()
 		{
 			Weapon->SetOwner(this);
 			Weapon->AttachToComponent(GetMesh1P(), FAttachmentTransformRules::SnapToTargetIncludingScale, WeaponAttachSocketName);
+			Weapon->SetTeam(Team);
 		}
 	}
+	SetTeamColor();
 
 	HealthComponent->OnHealthChanged.AddDynamic(this, &ADumberPlumberCharacter::OnHealthChanged);
 }
@@ -103,6 +110,42 @@ void ADumberPlumberCharacter::SetupPlayerInputComponent(class UInputComponent* P
 	PlayerInputComponent->BindAxis("TurnRate", this, &ADumberPlumberCharacter::TurnAtRate);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &ADumberPlumberCharacter::LookUpAtRate);
+}
+
+void ADumberPlumberCharacter::DetermineTeam()
+{
+	ADumberPlumberGameMode* mymode = Cast<ADumberPlumberGameMode>(GetWorld()->GetAuthGameMode());
+	Team = mymode->ChooseTeam(this);
+}
+
+void ADumberPlumberCharacter::SetTeamColor()
+{
+	if (RedTeamMaterial == nullptr || BlueTeamMaterial == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("RedTeamMaterial == nullptr || BlueTeamMaterial == nullptr"));
+	}
+
+	if (Team == ETeamEnum::RED)
+	{
+		Mesh1P->SetMaterial(0, RedTeamMaterial);
+	}
+	else
+	{
+		Mesh1P->SetMaterial(0, BlueTeamMaterial);
+	}
+}
+
+
+
+void ADumberPlumberCharacter::PlayerTeamChangedClient()
+{
+	UE_LOG(LogTemp, Warning, TEXT("PlayerTeamChangedClient"));
+	SetTeamColor();
+}
+
+ETeamEnum ADumberPlumberCharacter::GetTeam()
+{
+	return Team;
 }
 
 void ADumberPlumberCharacter::Tick(float DeltaSeconds)
@@ -235,4 +278,7 @@ void ADumberPlumberCharacter::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 
 	DOREPLIFETIME(ADumberPlumberCharacter, Weapon);
 	DOREPLIFETIME(ADumberPlumberCharacter, Died);
+	DOREPLIFETIME(ADumberPlumberCharacter, Team);
+	DOREPLIFETIME(ADumberPlumberCharacter, RedTeamMaterial);
+	DOREPLIFETIME(ADumberPlumberCharacter, BlueTeamMaterial);
 }

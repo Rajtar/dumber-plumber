@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "TeamEnum.h"
+
 #include "Weapon.generated.h"
 
 UCLASS()
@@ -20,7 +22,25 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerFire();
 
+	UFUNCTION()
+	void SetTeam(ETeamEnum Team);
+
+	UPROPERTY(Replicated, EditAnywhere)
+	class UMaterial* RedTeamMaterial;
+
+	UPROPERTY(Replicated, EditAnywhere)
+	class UMaterial* BlueTeamMaterial;
+
+	UFUNCTION()
+	void WeaponTeamChangedClient();
+
 protected:
+
+	UFUNCTION()
+	void SetTeamColor();
+
+	UPROPERTY(ReplicatedUsing = WeaponTeamChangedClient, EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	ETeamEnum Team;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	class USkeletalMeshComponent* Mesh;

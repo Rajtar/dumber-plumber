@@ -4,11 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "TeamEnum.h"
+
+
 #include "DumberPlumberCharacter.generated.h"
 
 class ADumberPlumberPipeActor;
 class IInteractable;
 class UInputComponent;
+enum class ETeamEnum : uint8;
 
 UCLASS(config=Game)
 class ADumberPlumberCharacter : public ACharacter
@@ -101,14 +105,34 @@ protected:
 	UPROPERTY(Replicated, BlueprintReadOnly, Category="Player")
 	bool Died;
 	
-protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
 	// End of APawn interface
 
+	UFUNCTION()
+	void DetermineTeam();
+
+	UFUNCTION()
+	void SetTeamColor();
+
+	UPROPERTY(ReplicatedUsing = PlayerTeamChangedClient)
+	ETeamEnum Team;
+
 public:
 	UFUNCTION(BlueprintImplementableEvent, Category="Health")
 	void HealthInd();
+
+	UFUNCTION()
+	void PlayerTeamChangedClient();
+
+	UPROPERTY(Replicated, EditAnywhere)
+	class UMaterial* RedTeamMaterial;
+
+	UPROPERTY(Replicated, EditAnywhere)
+	class UMaterial* BlueTeamMaterial;
+
+	UFUNCTION()
+	ETeamEnum GetTeam();
 
 	/** Returns Mesh1P subobject **/
 	FORCEINLINE class USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }

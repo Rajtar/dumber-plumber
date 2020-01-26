@@ -35,7 +35,6 @@ void UHealthComponent::HealthChanged()
 	auto plumber = (ADumberPlumberCharacter*)GetOwner();
 	if (plumber)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("plumber found"));
 		plumber->HealthInd();
 	}
 	else

@@ -15,3 +15,14 @@ ADumberPlumberGameMode::ADumberPlumberGameMode()
 	// use our custom HUD class
 	HUDClass = ADumberPlumberHUD::StaticClass();
 }
+
+ETeamEnum ADumberPlumberGameMode::ChooseTeam(ADumberPlumberCharacter* character)
+{
+	if (redPlayers >= bluePlayers)
+	{
+		bluePlayers++;
+		return ETeamEnum::BLUE;
+	}
+	redPlayers++;
+	return ETeamEnum::RED;
+}
