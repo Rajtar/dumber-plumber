@@ -46,15 +46,12 @@ void AWeapon::Fire()
 
 void AWeapon::SetTeam(ETeamEnum Team)
 {
-	UE_LOG(LogTemp, Warning, TEXT("AWeapon  SetTeam  Serwer Previous %s"), /*(this->Team == ETeamEnum::UNDEFINED ? TEXT("UNDEFINED") : */(this->Team == ETeamEnum::RED ? TEXT("RED") : TEXT("BLUE")));
-	UE_LOG(LogTemp, Warning, TEXT("AWeapon  SetTeam  Serwer %s"), /*(Team == ETeamEnum::UNDEFINED ? TEXT("UNDEFINED") : */(Team == ETeamEnum::RED ? TEXT("RED") : TEXT("BLUE")));
 	this->Team = Team;
 	SetTeamColor();
 }
 
 void AWeapon::WeaponTeamChangedClient()
 {
-	UE_LOG(LogTemp, Warning, TEXT("AWeapon  SetTeam  Client %s"), /*(Team == ETeamEnum::UNDEFINED ? TEXT("UNDEFINED") :*/ (Team == ETeamEnum::RED ? TEXT("RED") : TEXT("BLUE")));
 	SetTeamColor();
 }
 
