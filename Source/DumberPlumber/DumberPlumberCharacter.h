@@ -55,10 +55,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	float MaxInteractionDistance;
 
-	UPROPERTY(BlueprintReadOnly, Category = Gameplay)
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = Gameplay)
 	ADumberPlumberPipeActor* GrabbedPipe;
 
-	IInteractable* FocusedInteractable;
+	UPROPERTY(Replicated)
+	ADumberPlumberPipeActor* FocusedInteractable;
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	FName WeaponAttachSocketName;
@@ -100,7 +101,15 @@ protected:
 
 	void UpdateFocusedInteractable();
 
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerUpdateFocusedInteractable();
+
+	void LightUpTheObject();
+
 	void UseFocusedInteractable();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerUseFocusedInteractable();
 
 	UPROPERTY(Replicated, BlueprintReadOnly, Category="Player")
 	bool Died;
@@ -117,6 +126,8 @@ protected:
 
 	UPROPERTY(ReplicatedUsing = PlayerTeamChangedClient)
 	ETeamEnum Team;
+
+	IInteractable* highlightRef;
 
 public:
 	UFUNCTION(BlueprintImplementableEvent, Category="Health")

@@ -120,11 +120,6 @@ void ADumberPlumberCharacter::DetermineTeam()
 
 void ADumberPlumberCharacter::SetTeamColor()
 {
-	if (RedTeamMaterial == nullptr || BlueTeamMaterial == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("RedTeamMaterial == nullptr || BlueTeamMaterial == nullptr"));
-	}
-
 	if (Team == ETeamEnum::RED)
 	{
 		Mesh1P->SetMaterial(0, RedTeamMaterial);
@@ -139,7 +134,6 @@ void ADumberPlumberCharacter::SetTeamColor()
 
 void ADumberPlumberCharacter::PlayerTeamChangedClient()
 {
-	UE_LOG(LogTemp, Warning, TEXT("PlayerTeamChangedClient"));
 	SetTeamColor();
 }
 
@@ -182,17 +176,14 @@ void ADumberPlumberCharacter::OnFire()
 void ADumberPlumberCharacter::OnHealthChanged(UHealthComponent* HealthComp, float Health, float HealthDelta,
 	const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
 {
-	UE_LOG(LogTemp, Warning, TEXT("OnHealthChanged: %s"), *FString::SanitizeFloat(Health));
 	if (Health <= 0 && !Died)
 	{
 		Died = true;
 
-		//GetCharacterMovement()->StopActiveMovement();
 		GetMovementComponent()->StopMovementImmediately();
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 		DetachFromControllerPendingDestroy();
-		//SetLifeSpan(10.0f);
 	}
 }
 
@@ -229,7 +220,15 @@ void ADumberPlumberCharacter::LookUpAtRate(float Rate)
 
 void ADumberPlumberCharacter::UpdateFocusedInteractable()
 {
-	if (Controller && Controller->IsLocalPlayerController())
+	LightUpTheObject();
+
+	if (Role < ROLE_Authority)
+	{
+		ServerUpdateFocusedInteractable();
+		return;
+	}
+
+	if (Controller)
 	{
 		FVector CameraPosition;
 		FRotator CameraRotation;
@@ -242,24 +241,66 @@ void ADumberPlumberCharacter::UpdateFocusedInteractable()
 		
 		if (GetWorld()->LineTraceSingleByChannel(HitResult, StartTrace, EndTrace, ECC_Visibility))
 		{
-			IInteractable* Interactable = Cast<IInteractable>(HitResult.GetActor());
+			ADumberPlumberPipeActor* Interactable = Cast<ADumberPlumberPipeActor>(HitResult.GetActor());
 			if (Interactable)
 			{
 				FocusedInteractable = Interactable;
-				FocusedInteractable->MarkAsFocused();
 				return;
 			}
-		}
-		if (FocusedInteractable)
-		{
-			FocusedInteractable->UnmarkAsFocused();
 		}
 		FocusedInteractable = nullptr;
 	}
 }
 
+void ADumberPlumberCharacter::ServerUpdateFocusedInteractable_Implementation()
+{
+	UpdateFocusedInteractable();
+}
+
+bool ADumberPlumberCharacter::ServerUpdateFocusedInteractable_Validate()
+{
+	return true;
+}
+
+void ADumberPlumberCharacter::LightUpTheObject()
+{
+	if (Controller && Controller->IsLocalPlayerController())
+	{
+		FVector CameraPosition;
+		FRotator CameraRotation;
+		Controller->GetPlayerViewPoint(CameraPosition, CameraRotation);
+
+		const FVector StartTrace = CameraPosition;
+		const FVector Direction = CameraRotation.Vector();
+		const FVector EndTrace = StartTrace + Direction * MaxInteractionDistance;
+		FHitResult HitResult;
+
+		if (GetWorld()->LineTraceSingleByChannel(HitResult, StartTrace, EndTrace, ECC_Visibility))
+		{
+			IInteractable* Interactable = Cast<IInteractable>(HitResult.GetActor());
+			if (Interactable)
+			{
+				highlightRef = Interactable;
+				Interactable->MarkAsFocused();
+				return;
+			}
+		}
+		if (highlightRef)
+		{
+			highlightRef->UnmarkAsFocused();
+		}
+		highlightRef = nullptr;
+	}
+}
+
 void ADumberPlumberCharacter::UseFocusedInteractable()
 {
+	if (Role < ROLE_Authority)
+	{
+		ServerUseFocusedInteractable();
+		return;
+	}
+
 	if (GrabbedPipe)
 	{
 		GrabbedPipe->DropPipe();
@@ -272,6 +313,16 @@ void ADumberPlumberCharacter::UseFocusedInteractable()
 	}
 }
 
+void ADumberPlumberCharacter::ServerUseFocusedInteractable_Implementation()
+{
+	UseFocusedInteractable();
+}
+
+bool ADumberPlumberCharacter::ServerUseFocusedInteractable_Validate()
+{
+	return true;
+}
+
 void ADumberPlumberCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -281,4 +332,6 @@ void ADumberPlumberCharacter::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 	DOREPLIFETIME(ADumberPlumberCharacter, Team);
 	DOREPLIFETIME(ADumberPlumberCharacter, RedTeamMaterial);
 	DOREPLIFETIME(ADumberPlumberCharacter, BlueTeamMaterial);
+	DOREPLIFETIME(ADumberPlumberCharacter, GrabbedPipe);
+	DOREPLIFETIME(ADumberPlumberCharacter, FocusedInteractable);
 }

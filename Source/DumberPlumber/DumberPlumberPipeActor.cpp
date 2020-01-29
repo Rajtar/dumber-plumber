@@ -2,12 +2,10 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "DumberPlumberCharacter.h"
+#include "Net/UnrealNetwork.h"
 
 ADumberPlumberPipeActor::ADumberPlumberPipeActor()
 {
-	SetReplicates(true);
-	SetReplicateMovement(true);
-	
 	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
 	RootComponent = StaticMesh;
 	StaticMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -16,6 +14,9 @@ ADumberPlumberPipeActor::ADumberPlumberPipeActor()
 	CapsuleCollider->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	CapsuleCollider->SetCollisionResponseToAllChannels(ECR_Block);
 	CapsuleCollider->SetupAttachment(StaticMesh);
+
+	SetReplicates(true);
+	SetReplicateMovement(true);
 }
 
 void ADumberPlumberPipeActor::BeginPlay()
@@ -26,6 +27,7 @@ void ADumberPlumberPipeActor::BeginPlay()
 
 void ADumberPlumberPipeActor::Interact(ACharacter* User)
 {
+	UE_LOG(LogTemp, Warning, TEXT("Interact"));
 	PickUpPipe(User);
 }
 
@@ -41,7 +43,8 @@ void ADumberPlumberPipeActor::UnmarkAsFocused()
 
 void ADumberPlumberPipeActor::PickUpPipe(ACharacter* Character)
 {
-	ADumberPlumberCharacter* PlayerCharacter = Cast<ADumberPlumberCharacter>(Character);
+	UE_LOG(LogTemp, Warning, TEXT("Pick Up"));
+	PlayerCharacter = Cast<ADumberPlumberCharacter>(Character);
 	if (PlayerCharacter)
 	{
 		PlayerCharacter->GrabbedPipe = this;
@@ -51,9 +54,19 @@ void ADumberPlumberPipeActor::PickUpPipe(ACharacter* Character)
 	}
 }
 
-void ADumberPlumberPipeActor::DropPipe() const
+void ADumberPlumberPipeActor::DropPipe()
 {
+	PlayerCharacter = nullptr;
 	StaticMesh->SetSimulatePhysics(true);
 	CapsuleCollider->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	StaticMesh->DetachFromComponent(FDetachmentTransformRules(EDetachmentRule::KeepRelative, false));
+}
+
+void ADumberPlumberPipeActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ADumberPlumberPipeActor, StaticMesh);
+	DOREPLIFETIME(ADumberPlumberPipeActor, CapsuleCollider);
+	DOREPLIFETIME(ADumberPlumberPipeActor, PlayerCharacter);
 }

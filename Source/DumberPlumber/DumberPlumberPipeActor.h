@@ -22,18 +22,20 @@ public:
 
 	void UnmarkAsFocused() override;
 	
-	void DropPipe() const;
+	void DropPipe();
 
 protected:
-	UPROPERTY(VisibleAnywhere, Category = "Components")
+	UPROPERTY(Replicated, VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent* StaticMesh;
 
-	UPROPERTY(VisibleAnywhere, Category = "Components")
+	UPROPERTY(Replicated, VisibleAnywhere, Category = "Components")
 	UCapsuleComponent* CapsuleCollider;
+
+	UPROPERTY(Replicated, VisibleAnywhere, Category = "Components")
+	class ADumberPlumberCharacter* PlayerCharacter;
 
 	virtual void BeginPlay() override;
 
 private:
 	void PickUpPipe(ACharacter* Character);
-
 };
