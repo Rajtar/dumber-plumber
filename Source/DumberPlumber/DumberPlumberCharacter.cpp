@@ -14,6 +14,7 @@
 #include "Weapon.h"
 #include "Net/UnrealNetwork.h"
 #include "DumberPlumberGameMode.h"
+#include "Engine/Engine.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
 
@@ -178,12 +179,12 @@ void ADumberPlumberCharacter::OnHealthChanged(UHealthComponent* HealthComp, floa
 {
 	if (Health <= 0 && !Died)
 	{
+		Weapon->Destroy();
+		Mesh1P->DestroyComponent();
 		Died = true;
-
 		GetMovementComponent()->StopMovementImmediately();
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
-		DetachFromControllerPendingDestroy();
+		DetachFromControllerPendingDestroy();	
 	}
 }
 

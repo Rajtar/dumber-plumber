@@ -19,6 +19,8 @@ public:
 	UFUNCTION()
 	ETeamEnum ChooseTeam(class ADumberPlumberCharacter* character);
 
+	void RespawnAllDeadPlayers();
+
 private:
 
 	UPROPERTY()
@@ -34,4 +36,6 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite)
 	TArray<AActor*> RedSpawPoints;
+
+	void BeginPlay() override;
 };

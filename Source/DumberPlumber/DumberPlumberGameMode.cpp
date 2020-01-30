@@ -4,6 +4,8 @@
 #include "DumberPlumberHUD.h"
 #include "DumberPlumberCharacter.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Engine/World.h"
+#include "TimerManager.h"
 
 ADumberPlumberGameMode::ADumberPlumberGameMode()
 	: Super()
@@ -25,4 +27,25 @@ ETeamEnum ADumberPlumberGameMode::ChooseTeam(ADumberPlumberCharacter* character)
 	}
 	redPlayers++;
 	return ETeamEnum::RED;
+}
+
+void ADumberPlumberGameMode::RespawnAllDeadPlayers()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Respawning dead players"));
+	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+	{
+		APlayerController* PlayerController = Iterator->Get();
+		if (PlayerController && PlayerController->GetPawn() == nullptr)
+		{
+			RestartPlayer(PlayerController);
+		}
+	}
+}
+
+
+void ADumberPlumberGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+	FTimerHandle TimerHandle;
+	GetWorldTimerManager().SetTimer(TimerHandle, this, &ADumberPlumberGameMode::RespawnAllDeadPlayers, 5.0f, true, 3.0f);
 }
