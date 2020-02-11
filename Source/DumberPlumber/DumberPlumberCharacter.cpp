@@ -11,6 +11,7 @@
 #include "GameFramework/InputSettings.h"
 #include "Kismet/GameplayStatics.h"
 #include "HealthComponent.h"
+#include "BuildComponent.h"
 #include "Weapon.h"
 #include "Net/UnrealNetwork.h"
 #include "DumberPlumberGameMode.h"
@@ -34,6 +35,7 @@ ADumberPlumberCharacter::ADumberPlumberCharacter()
 	WeaponAttachSocketName = "GripPoint";
 
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
+	BuildComponent = CreateDefaultSubobject<UBuildComponent>(TEXT("Builder"));
 
 	// Create a CameraComponent	
 	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
@@ -97,6 +99,8 @@ void ADumberPlumberCharacter::SetupPlayerInputComponent(class UInputComponent* P
 
 	// Bind fire event
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ADumberPlumberCharacter::OnFire);
+	PlayerInputComponent->BindAction("RightMouseButton", IE_Pressed, BuildComponent, &UBuildComponent::RightMousePressed);
+	PlayerInputComponent->BindAction("RightMouseButton", IE_Released, BuildComponent, &UBuildComponent::RightMouseReleased);
 
 	PlayerInputComponent->BindAction("Grab", IE_Pressed, this, &ADumberPlumberCharacter::UseFocusedInteractable);
 
@@ -154,6 +158,7 @@ void ADumberPlumberCharacter::Tick(float DeltaSeconds)
 		FirstPersonCameraComponent->SetRelativeRotation(NewRot);
 	}
 	UpdateFocusedInteractable();
+	BuildComponent->Update();
 }
 
 void ADumberPlumberCharacter::OnFire()
