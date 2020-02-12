@@ -2,97 +2,52 @@
 
 
 #include "PipeGrid.h"
-
-namespace {
-	const float THRESHOLD = pow(2.0, 0.5) / 2.0f;
-	const FVector NORTH(1.0f, 0.0f, 0.0f);
-	const FVector EAST(0.0f, 1.0f, 0.0f);
-}
-
+#include <Runtime\Engine\Public\DrawDebugHelpers.h>
 
 // Sets default values
 APipeGrid::APipeGrid()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	//PrimaryActorTick.bCanEverTick = true;
-	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
-	RootComponent = StaticMesh;
-	StaticMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = true;
 }
 
 // Called when the game starts or when spawned
 void APipeGrid::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	DetermineState();
-}
 
-void APipeGrid::SetMaterial(UMaterial* material)
-{
-	if (material != nullptr)
+	if (DebugDraw)
 	{
-		StaticMesh->SetMaterial(0, material);
+		DrawGrid();
 	}
 }
 
-void APipeGrid::DetermineState()
+void APipeGrid::Tick(float DeltaSeconds)
 {
-	if (IsBuilt)
-	{
-		SetMaterial(BuiltMaterial);
-		StaticMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	}
-	else
-	{
-		SetMaterial(PreviewMaterial);
-		StaticMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	}
+
 }
 
-bool APipeGrid::GetIsBuilt()
+void APipeGrid::DrawGrid()
 {
-	return IsBuilt;
-}
-
-void APipeGrid::Build()
-{
-	IsBuilt = true;
-	SetMaterial(BuiltMaterial);
-	StaticMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-}
-
-FVector APipeGrid::DetermineLocation(FVector hitLocation)
-{
-	UE_LOG(LogTemp, Warning, TEXT("forward: %s"), *GetActorForwardVector().ToString());
-	UE_LOG(LogTemp, Warning, TEXT("up: %s"), *GetActorUpVector().ToString());
-	UE_LOG(LogTemp, Warning, TEXT("right: %s"), *GetActorRightVector().ToString());
-
-	hitLocation.Z = 0.0f;
-	auto location = GetTransform().GetLocation();
-	location.Z = 0.0f;
-	auto relativeLocation = hitLocation - location;
-	UE_LOG(LogTemp, Warning, TEXT("relativeLocation: %s"), *relativeLocation.ToString());
-
-
-	auto determinant = NORTH.CosineAngle2D(relativeLocation);
-	UE_LOG(LogTemp, Warning, TEXT("forward determinant: %s"), *FString::SanitizeFloat(determinant));
-	constexpr uint32_t distance = 200;
-	if (determinant > THRESHOLD)
+	float length_Y = GridSize_Y * GridSize;
+	for (uint32 x = 0; x <= GridSize_X; ++x)
 	{
-		return GetTransform().GetLocation() + NORTH * distance;
-	}
-	if (determinant < -THRESHOLD)
-	{
-		return GetTransform().GetLocation() - NORTH * distance;
+		FVector LinkStart = GetActorLocation();
+		FVector LinkEnd = GetActorLocation();
+		LinkEnd.Y += length_Y;
+		LinkStart.X += x * GridSize;
+		LinkEnd.X += x * GridSize;
+		DrawDebugLine(GetWorld(), LinkStart, LinkEnd, FColor::Blue, true);
 	}
 
-
-	determinant = EAST.CosineAngle2D(relativeLocation);
-	UE_LOG(LogTemp, Warning, TEXT("up determinant: %s"), *FString::SanitizeFloat(determinant));
-	if (determinant > THRESHOLD)
+	float length_X = GridSize_X * GridSize;
+	for (uint32 y = 0; y <= GridSize_Y; ++y)
 	{
-		return GetTransform().GetLocation() + EAST * distance;
+		FVector LinkStart = GetActorLocation();
+		FVector LinkEnd = GetActorLocation();
+		LinkEnd.X += length_X;
+		LinkStart.Y += y * GridSize;
+		LinkEnd.Y += y * GridSize;
+		DrawDebugLine(GetWorld(), LinkStart, LinkEnd, FColor::Blue, true);
 	}
-	return GetTransform().GetLocation() - EAST * distance;
 }

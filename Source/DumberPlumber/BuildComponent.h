@@ -31,9 +31,9 @@ protected:
 	class ADumberPlumberCharacter* ParentRef;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Pipe")
-	TSubclassOf<AActor> PipeGrid;
+	TSubclassOf<AActor> Pipe;
 
-	class APipeGrid* PipeGridRef = nullptr;
+	class APipe* PipeRef = nullptr;
 
 	bool IsRMBPressed = false;
 
@@ -44,6 +44,6 @@ public:
 
 private:
 
-	void SpawnPipePreview(const FVector& spawnLocation, class APipeGrid* originPipeRef);
+	void SpawnPipePreview(const FVector& spawnLocation, class APipe* originPipeRef);
 
 };

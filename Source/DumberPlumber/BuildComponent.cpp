@@ -4,14 +4,14 @@
 #include "BuildComponent.h"
 #include "DumberPlumberCharacter.h"
 #include "DumberPlumberPipeActor.h"
-#include "PipeGrid.h"
+#include "Pipe.h"
 #include "Components/SceneComponent.h"
 #include "Engine/World.h"
 #include "Math/NumericLimits.h"
 
 
 namespace {
-	constexpr uint32_t BUILDING_DISTANCE(200);
+	constexpr uint32_t BUILDING_DISTANCE(450);
 }
 
 // Sets default values for this component's properties
@@ -39,14 +39,14 @@ void UBuildComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-void UBuildComponent::SpawnPipePreview(const FVector& spawnLocation, APipeGrid* originPipeRef)
+void UBuildComponent::SpawnPipePreview(const FVector& spawnLocation, APipe* originPipeRef)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Spawn Pipe Preview"));
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	FVector location = originPipeRef->DetermineLocation(spawnLocation);
 	FRotator rotation = FRotator(90.0f, 0.0f, 0.0f);
-	PipeGridRef = GetWorld()->SpawnActor<APipeGrid>(PipeGrid, location, rotation, SpawnParams);
+	PipeRef = GetWorld()->SpawnActor<APipe>(Pipe, location, rotation, SpawnParams);
 }
 
 void UBuildComponent::Update()
@@ -72,12 +72,12 @@ void UBuildComponent::Update()
 		return;
 	}
 
-	APipeGrid* nearestBuiltPipeRef = nullptr;
+	APipe* nearestBuiltPipeRef = nullptr;
 	FVector nearestHitLocation;
 	float minDistance = TNumericLimits<float>::Max();
 	for (const auto& hit : hits)
 	{
-		auto builtPipeRef = Cast<APipeGrid>(hit.Actor);
+		auto builtPipeRef = Cast<APipe>(hit.Actor);
 		if (builtPipeRef == nullptr)
 		{
 			continue;
@@ -95,9 +95,9 @@ void UBuildComponent::Update()
 		return;
 	}
 
-	if (PipeGridRef != nullptr)
+	if (PipeRef != nullptr)
 	{
-		PipeGridRef->SetActorLocation(nearestBuiltPipeRef->DetermineLocation(nearestHitLocation));
+		PipeRef->SetActorLocation(nearestBuiltPipeRef->DetermineLocation(nearestHitLocation));
 	}
 	else
 	{
@@ -108,13 +108,13 @@ void UBuildComponent::Update()
 void UBuildComponent::LeftMousePressed()
 {
 	UE_LOG(LogTemp, Warning, TEXT("LMB Pressed"));
-	if (PipeGridRef == nullptr)
+	if (PipeRef == nullptr)
 	{
 		return;
 	}
 
-	PipeGridRef->Build();
-	PipeGridRef = nullptr;
+	PipeRef->Build();
+	PipeRef = nullptr;
 }
 
 void UBuildComponent::RightMousePressed()
@@ -126,10 +126,10 @@ void UBuildComponent::RightMousePressed()
 void UBuildComponent::RightMouseReleased()
 {
 	IsRMBPressed = false;
-	if (PipeGridRef != nullptr)
+	if (PipeRef != nullptr)
 	{
-		PipeGridRef->Destroy();
-		PipeGridRef = nullptr;
+		PipeRef->Destroy();
+		PipeRef = nullptr;
 	}
 	UE_LOG(LogTemp, Warning, TEXT("RMB Released"));
 }

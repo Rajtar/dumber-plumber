@@ -15,36 +15,27 @@ public:
 	// Sets default values for this actor's properties
 	APipeGrid();
 
-	bool GetIsBuilt();
+	void Tick(float DeltaSeconds) override;
 
-	void Build();
+	void DrawGrid();
 
-	FVector DetermineLocation(FVector hitLocation);
+	TArray<TArray<class APipe*>> Grid;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Mesh)
-	class UStaticMeshComponent* StaticMesh;
+	//TArray<AGridBase*> Grid;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mesh)
-	class UMaterial* BuiltMaterial;
+	UPROPERTY(EditDefaultsOnly, Category = "Grid")
+	uint32 GridSize_X = 0;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mesh)
-	class UMaterial* PreviewMaterial;
+	UPROPERTY(EditDefaultsOnly, Category = "Grid")
+	uint32 GridSize_Y = 0;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Grid")
+	uint32 GridSize = 200;
+
+	UPROPERTY(EditAnywhere, Category = "Debug")
+	bool DebugDraw = false;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
-	bool IsBuilt = false;
-
-	void SetMaterial(class UMaterial* material);
-
-	void DetermineState();
-
-private:
-
-	APipeGrid* Left;
-	APipeGrid* Right;
-	APipeGrid* Front;
-	APipeGrid* Back;
 };
