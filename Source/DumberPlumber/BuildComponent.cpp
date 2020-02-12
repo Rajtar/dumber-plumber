@@ -7,7 +7,12 @@
 #include "PipeGrid.h"
 #include "Components/SceneComponent.h"
 #include "Engine/World.h"
+#include "Math/NumericLimits.h"
 
+
+namespace {
+	constexpr uint32_t BUILDING_DISTANCE(200);
+}
 
 // Sets default values for this component's properties
 UBuildComponent::UBuildComponent()
@@ -34,6 +39,16 @@ void UBuildComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
+void UBuildComponent::SpawnPipePreview(const FVector& spawnLocation, APipeGrid* originPipeRef)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Spawn Pipe Preview"));
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	FVector location = originPipeRef->DetermineLocation(spawnLocation);
+	FRotator rotation = FRotator(90.0f, 0.0f, 0.0f);
+	PipeGridRef = GetWorld()->SpawnActor<APipeGrid>(PipeGrid, location, rotation, SpawnParams);
+}
+
 void UBuildComponent::Update()
 {
 	if (!IsRMBPressed)
@@ -45,13 +60,21 @@ void UBuildComponent::Update()
 	FRotator CamRot;
 	ParentRef->Controller->GetPlayerViewPoint(CamLoc, CamRot);
 
-	const FVector Target = CamLoc + CamRot.Vector() * 200;
+	const FVector Target = CamLoc + CamRot.Vector() * BUILDING_DISTANCE;
 
 	const UWorld* MyWorld = GetWorld();
 	TArray<FHitResult> hits;
 	FCollisionShape sphere = FCollisionShape::MakeSphere(100);
 	MyWorld->SweepMultiByChannel(hits, CamLoc, Target, FQuat::Identity, ECollisionChannel::ECC_Visibility, sphere);
 
+	if (hits.Num() == 0)
+	{
+		return;
+	}
+
+	APipeGrid* nearestBuiltPipeRef = nullptr;
+	FVector nearestHitLocation;
+	float minDistance = TNumericLimits<float>::Max();
 	for (const auto& hit : hits)
 	{
 		auto builtPipeRef = Cast<APipeGrid>(hit.Actor);
@@ -59,22 +82,39 @@ void UBuildComponent::Update()
 		{
 			continue;
 		}
-		if (PipeGridRef != nullptr)
+		float distance = FVector::Dist(hit.Location, builtPipeRef->GetActorLocation());
+		if (distance < minDistance)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Update Location"));
-			PipeGridRef->SetActorLocation(builtPipeRef->DetermineLocation(hit.Location));
-			break;
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Spawn Pipe Preview"));
-			FActorSpawnParameters SpawnParams;
-			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-			FVector location = builtPipeRef->DetermineLocation(hit.Location);
-			FRotator rotation = FRotator(90.0f, 0.0f, 0.0f);
-			PipeGridRef = GetWorld()->SpawnActor<AActor>(PipeGrid, location, rotation, SpawnParams);
+			nearestBuiltPipeRef = builtPipeRef;
+			nearestHitLocation = hit.Location;
 		}
 	}
+
+	if (nearestBuiltPipeRef == nullptr)
+	{
+		return;
+	}
+
+	if (PipeGridRef != nullptr)
+	{
+		PipeGridRef->SetActorLocation(nearestBuiltPipeRef->DetermineLocation(nearestHitLocation));
+	}
+	else
+	{
+		SpawnPipePreview(nearestHitLocation, nearestBuiltPipeRef);
+	}
+}
+
+void UBuildComponent::LeftMousePressed()
+{
+	UE_LOG(LogTemp, Warning, TEXT("LMB Pressed"));
+	if (PipeGridRef == nullptr)
+	{
+		return;
+	}
+
+	PipeGridRef->Build();
+	PipeGridRef = nullptr;
 }
 
 void UBuildComponent::RightMousePressed()

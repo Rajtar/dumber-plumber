@@ -99,6 +99,7 @@ void ADumberPlumberCharacter::SetupPlayerInputComponent(class UInputComponent* P
 
 	// Bind fire event
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ADumberPlumberCharacter::OnFire);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, BuildComponent, &UBuildComponent::LeftMousePressed);
 	PlayerInputComponent->BindAction("RightMouseButton", IE_Pressed, BuildComponent, &UBuildComponent::RightMousePressed);
 	PlayerInputComponent->BindAction("RightMouseButton", IE_Released, BuildComponent, &UBuildComponent::RightMouseReleased);
 

@@ -15,6 +15,12 @@ public:
 	// Sets default values for this actor's properties
 	APipeGrid();
 
+	bool GetIsBuilt();
+
+	void Build();
+
+	FVector DetermineLocation(FVector hitLocation);
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Mesh)
 	class UStaticMeshComponent* StaticMesh;
 
@@ -35,14 +41,10 @@ protected:
 
 	void DetermineState();
 
+private:
+
 	APipeGrid* Left;
 	APipeGrid* Right;
 	APipeGrid* Front;
 	APipeGrid* Back;
-
-public:	
-
-	bool GetIsBuilt();
-
-	FVector DetermineLocation(FVector hitLocation);
 };

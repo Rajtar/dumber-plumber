@@ -16,6 +16,14 @@ public:
 	// Sets default values for this component's properties
 	UBuildComponent();
 
+	void Update();
+
+	void LeftMousePressed();
+
+	void RightMousePressed();
+
+	void RightMouseReleased();
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -25,7 +33,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Pipe")
 	TSubclassOf<AActor> PipeGrid;
 
-	AActor* PipeGridRef = nullptr;
+	class APipeGrid* PipeGridRef = nullptr;
 
 	bool IsRMBPressed = false;
 
@@ -33,9 +41,9 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	void Update();
 
-	void RightMousePressed();
+private:
 
-	void RightMouseReleased();
+	void SpawnPipePreview(const FVector& spawnLocation, class APipeGrid* originPipeRef);
+
 };
