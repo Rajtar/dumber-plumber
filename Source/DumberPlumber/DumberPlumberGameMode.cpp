@@ -31,7 +31,7 @@ ETeamEnum ADumberPlumberGameMode::ChooseTeam(ADumberPlumberCharacter* character)
 
 void ADumberPlumberGameMode::RespawnAllDeadPlayers()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Respawning dead players"));
+	//UE_LOG(LogTemp, Warning, TEXT("Respawning dead players"));
 	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
 	{
 		APlayerController* PlayerController = Iterator->Get();
