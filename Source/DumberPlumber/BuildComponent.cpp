@@ -39,16 +39,6 @@ void UBuildComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-void UBuildComponent::SpawnPipePreview(const FVector& spawnLocation, APipe* originPipeRef)
-{
-	UE_LOG(LogTemp, Warning, TEXT("Spawn Pipe Preview"));
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	FVector location = originPipeRef->DetermineLocation(spawnLocation);
-	FRotator rotation = FRotator(90.0f, 0.0f, 0.0f);
-	PipeRef = GetWorld()->SpawnActor<APipe>(Pipe, location, rotation, SpawnParams);
-}
-
 void UBuildComponent::Update()
 {
 	if (!IsRMBPressed)
@@ -56,52 +46,28 @@ void UBuildComponent::Update()
 		return;
 	}
 
-	FVector CamLoc;
-	FRotator CamRot;
-	ParentRef->Controller->GetPlayerViewPoint(CamLoc, CamRot);
-
-	const FVector Target = CamLoc + CamRot.Vector() * BUILDING_DISTANCE;
-
-	const UWorld* MyWorld = GetWorld();
-	TArray<FHitResult> hits;
-	FCollisionShape sphere = FCollisionShape::MakeSphere(100);
-	MyWorld->SweepMultiByChannel(hits, CamLoc, Target, FQuat::Identity, ECollisionChannel::ECC_Visibility, sphere);
+	TArray<FHitResult> hits = FindObejctsAroundRayInRange(100.0f);
 
 	if (hits.Num() == 0)
 	{
 		return;
 	}
 
-	APipe* nearestBuiltPipeRef = nullptr;
 	FVector nearestHitLocation;
-	float minDistance = TNumericLimits<float>::Max();
-	for (const auto& hit : hits)
-	{
-		auto builtPipeRef = Cast<APipe>(hit.Actor);
-		if (builtPipeRef == nullptr)
-		{
-			continue;
-		}
-		float distance = FVector::Dist(hit.Location, builtPipeRef->GetActorLocation());
-		if (distance < minDistance)
-		{
-			nearestBuiltPipeRef = builtPipeRef;
-			nearestHitLocation = hit.Location;
-		}
-	}
+	NearestBuiltPipe = FindNearestPipe(hits, nearestHitLocation);
 
-	if (nearestBuiltPipeRef == nullptr)
+	if (NearestBuiltPipe == nullptr)
 	{
 		return;
 	}
 
 	if (PipeRef != nullptr)
 	{
-		PipeRef->SetActorLocation(nearestBuiltPipeRef->DetermineLocation(nearestHitLocation));
+		PipeRef->SetActorLocation(NearestBuiltPipe->DetermineLocation(nearestHitLocation));
 	}
 	else
 	{
-		SpawnPipePreview(nearestHitLocation, nearestBuiltPipeRef);
+		SpawnPipePreview(nearestHitLocation, NearestBuiltPipe);
 	}
 }
 
@@ -113,8 +79,9 @@ void UBuildComponent::LeftMousePressed()
 		return;
 	}
 
-	PipeRef->Build();
+	PipeRef->Build(NearestBuiltPipe);
 	PipeRef = nullptr;
+	NearestBuiltPipe = nullptr;
 }
 
 void UBuildComponent::RightMousePressed()
@@ -132,4 +99,51 @@ void UBuildComponent::RightMouseReleased()
 		PipeRef = nullptr;
 	}
 	UE_LOG(LogTemp, Warning, TEXT("RMB Released"));
+}
+
+void UBuildComponent::SpawnPipePreview(const FVector& spawnLocation, APipe* originPipeRef)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Spawn Pipe Preview"));
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	FVector location = originPipeRef->DetermineLocation(spawnLocation);
+	FRotator rotation = FRotator(90.0f, 0.0f, 0.0f);
+	PipeRef = GetWorld()->SpawnActor<APipe>(Pipe, location, rotation, SpawnParams);
+}
+
+TArray<FHitResult> UBuildComponent::FindObejctsAroundRayInRange(const float range) const
+{
+	FVector CamLoc;
+	FRotator CamRot;
+	ParentRef->Controller->GetPlayerViewPoint(CamLoc, CamRot);
+
+	const FVector Target = CamLoc + CamRot.Vector() * BUILDING_DISTANCE;
+
+	const UWorld* MyWorld = GetWorld();
+	TArray<FHitResult> hits;
+	FCollisionShape sphere = FCollisionShape::MakeSphere(100);
+	MyWorld->SweepMultiByChannel(hits, CamLoc, Target, FQuat::Identity, ECollisionChannel::ECC_Visibility, sphere);
+
+	return hits;
+}
+
+APipe* UBuildComponent::FindNearestPipe(const TArray<FHitResult>& hits, FVector& outNearestHit)
+{
+	APipe* NearestBuiltPipe = nullptr;
+	float minDistance = TNumericLimits<float>::Max();
+	for (const auto& hit : hits)
+	{
+		auto builtPipeRef = Cast<APipe>(hit.Actor);
+		if (builtPipeRef == nullptr)
+		{
+			continue;
+		}
+		float distance = FVector::Dist(hit.Location, builtPipeRef->GetActorLocation());
+		if (distance < minDistance)
+		{
+			NearestBuiltPipe = builtPipeRef;
+			outNearestHit = hit.Location;
+		}
+	}
+	return NearestBuiltPipe;
 }

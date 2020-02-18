@@ -17,7 +17,7 @@ public:
 
 	bool GetIsBuilt();
 
-	void Build();
+	void Build(APipe* parentPipe);
 
 	FVector DetermineLocation(FVector hitLocation);
 

@@ -34,6 +34,7 @@ protected:
 	TSubclassOf<AActor> Pipe;
 
 	class APipe* PipeRef = nullptr;
+	class APipe* NearestBuiltPipe = nullptr;
 
 	bool IsRMBPressed = false;
 
@@ -45,5 +46,9 @@ public:
 private:
 
 	void SpawnPipePreview(const FVector& spawnLocation, class APipe* originPipeRef);
+
+	TArray<FHitResult> FindObejctsAroundRayInRange(const float range) const;
+
+	class APipe* FindNearestPipe(const TArray<FHitResult>& hits, FVector& outNearestHit);
 
 };

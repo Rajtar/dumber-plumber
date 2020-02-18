@@ -55,7 +55,7 @@ bool APipe::GetIsBuilt()
 	return IsBuilt;
 }
 
-void APipe::Build()
+void APipe::Build(APipe* parentPipe)
 {
 	IsBuilt = true;
 	SetMaterial(BuiltMaterial);
