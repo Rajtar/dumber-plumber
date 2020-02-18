@@ -4,7 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+
+#include <vector>
+
 #include "Pipe.generated.h"
+
 
 UCLASS()
 class DUMBERPLUMBER_API APipe : public AActor
@@ -17,7 +21,7 @@ public:
 
 	bool GetIsBuilt();
 
-	void Build(APipe* parentPipe);
+	void Build();
 
 	FVector DetermineLocation(FVector hitLocation);
 
@@ -43,8 +47,9 @@ protected:
 
 private:
 
-	APipe* Left;
-	APipe* Right;
-	APipe* Front;
-	APipe* Back;
+	void LinkNeighbour(APipe* pipe);
+
+	void checkIfConnected(std::vector<APipe*>& chain, class ASourcePipe* source, class ATeamDestinationPipe* destination);
+
+	std::vector<APipe*> Neighbours;
 };

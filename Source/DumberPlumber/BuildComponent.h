@@ -34,7 +34,6 @@ protected:
 	TSubclassOf<AActor> Pipe;
 
 	class APipe* PipeRef = nullptr;
-	class APipe* NearestBuiltPipe = nullptr;
 
 	bool IsRMBPressed = false;
 

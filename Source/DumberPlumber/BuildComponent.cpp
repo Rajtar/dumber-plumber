@@ -54,39 +54,38 @@ void UBuildComponent::Update()
 	}
 
 	FVector nearestHitLocation;
-	NearestBuiltPipe = FindNearestPipe(hits, nearestHitLocation);
+	APipe* nearestBuiltPipe = FindNearestPipe(hits, nearestHitLocation);
 
-	if (NearestBuiltPipe == nullptr)
+	if (nearestBuiltPipe == nullptr)
 	{
 		return;
 	}
 
 	if (PipeRef != nullptr)
 	{
-		PipeRef->SetActorLocation(NearestBuiltPipe->DetermineLocation(nearestHitLocation));
+		PipeRef->SetActorLocation(nearestBuiltPipe->DetermineLocation(nearestHitLocation));
 	}
 	else
 	{
-		SpawnPipePreview(nearestHitLocation, NearestBuiltPipe);
+		SpawnPipePreview(nearestHitLocation, nearestBuiltPipe);
 	}
 }
 
 void UBuildComponent::LeftMousePressed()
 {
-	UE_LOG(LogTemp, Warning, TEXT("LMB Pressed"));
+	//UE_LOG(LogTemp, Warning, TEXT("LMB Pressed"));
 	if (PipeRef == nullptr)
 	{
 		return;
 	}
 
-	PipeRef->Build(NearestBuiltPipe);
+	PipeRef->Build();
 	PipeRef = nullptr;
-	NearestBuiltPipe = nullptr;
 }
 
 void UBuildComponent::RightMousePressed()
 {
-	UE_LOG(LogTemp, Warning, TEXT("RMB Pressed"));
+	//UE_LOG(LogTemp, Warning, TEXT("RMB Pressed"));
 	IsRMBPressed = true;
 }
 
@@ -98,12 +97,12 @@ void UBuildComponent::RightMouseReleased()
 		PipeRef->Destroy();
 		PipeRef = nullptr;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("RMB Released"));
+	//UE_LOG(LogTemp, Warning, TEXT("RMB Released"));
 }
 
 void UBuildComponent::SpawnPipePreview(const FVector& spawnLocation, APipe* originPipeRef)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Spawn Pipe Preview"));
+	//UE_LOG(LogTemp, Warning, TEXT("Spawn Pipe Preview"));
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	FVector location = originPipeRef->DetermineLocation(spawnLocation);
@@ -129,7 +128,7 @@ TArray<FHitResult> UBuildComponent::FindObejctsAroundRayInRange(const float rang
 
 APipe* UBuildComponent::FindNearestPipe(const TArray<FHitResult>& hits, FVector& outNearestHit)
 {
-	APipe* NearestBuiltPipe = nullptr;
+	APipe* nearestBuiltPipe = nullptr;
 	float minDistance = TNumericLimits<float>::Max();
 	for (const auto& hit : hits)
 	{
@@ -141,9 +140,9 @@ APipe* UBuildComponent::FindNearestPipe(const TArray<FHitResult>& hits, FVector&
 		float distance = FVector::Dist(hit.Location, builtPipeRef->GetActorLocation());
 		if (distance < minDistance)
 		{
-			NearestBuiltPipe = builtPipeRef;
+			nearestBuiltPipe = builtPipeRef;
 			outNearestHit = hit.Location;
 		}
 	}
-	return NearestBuiltPipe;
+	return nearestBuiltPipe;
 }
