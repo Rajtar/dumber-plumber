@@ -1,12 +1,11 @@
 
 
-
 #include "AssetStorage.h"
 
-AssetStorage::AssetStorage()
-{
-}
 
-AssetStorage::~AssetStorage()
+
+UAssetStorage::UAssetStorage(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
+
 }

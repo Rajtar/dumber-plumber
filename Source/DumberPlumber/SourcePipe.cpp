@@ -7,3 +7,7 @@ ASourcePipe::ASourcePipe() : Super()
 {
 
 }
+
+void ASourcePipe::AdjustShapeAndRotationToNeighbours()
+{
+}

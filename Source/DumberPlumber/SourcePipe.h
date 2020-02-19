@@ -17,4 +17,7 @@ class DUMBERPLUMBER_API ASourcePipe : public APipe
 public:
 	ASourcePipe();
 	
+protected:
+
+	void AdjustShapeAndRotationToNeighbours() final override;
 };

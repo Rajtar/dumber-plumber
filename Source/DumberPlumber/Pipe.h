@@ -41,15 +41,36 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
 		bool IsBuilt = false;
 
+	virtual void AdjustShapeAndRotationToNeighbours();
+
+private:
+
 	void SetMaterial(class UMaterial* material);
 
 	void DetermineState();
 
-private:
-
 	void LinkNeighbour(APipe* pipe);
 
-	void checkIfConnected(std::vector<APipe*>& chain, class ASourcePipe* source, class ATeamDestinationPipe* destination);
+	void FindNeighbourBuiltPipes();
+
+	void OneNeighbour();
+
+	void TwoNeighbours();
+
+	void ThreeNeighbours();
+
+	void FourNeighbours();
+
+	FVector getResultant();
+
+	FRotator getDesiredRotationFromVec(const FVector& vector);
+
+	void checkIfConnected(
+		std::vector<APipe*>& chain, 
+		std::vector<class ASourcePipe*> sources,
+		std::vector<class ATeamDestinationPipe*> destinations);
 
 	std::vector<APipe*> Neighbours;
+
+	class UAssetStorage* AssetStorage;
 };

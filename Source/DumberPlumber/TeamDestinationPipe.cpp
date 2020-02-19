@@ -7,3 +7,7 @@ ATeamDestinationPipe::ATeamDestinationPipe() : Super()
 {
 
 }
+
+void ATeamDestinationPipe::AdjustShapeAndRotationToNeighbours()
+{
+}

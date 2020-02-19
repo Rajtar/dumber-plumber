@@ -17,4 +17,8 @@ class DUMBERPLUMBER_API ATeamDestinationPipe : public APipe
 public:
 
     ATeamDestinationPipe();
+
+protected:
+
+    void AdjustShapeAndRotationToNeighbours() final override;
 };
