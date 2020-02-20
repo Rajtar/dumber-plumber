@@ -7,6 +7,7 @@
 #include "AssetStorage.h"
 
 #include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/KismetMathLibrary.h"
 #include <algorithm>
 #include <Runtime\Engine\Classes\Engine\Engine.h>
 
@@ -58,12 +59,12 @@ void APipe::DetermineState()
 {
 	if (IsBuilt)
 	{
-		SetMaterial(BuiltMaterial);
+		SetMaterial(*AssetStorage->PipeMaterials.Find(PipeState::NotConnected));
 		StaticMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	}
 	else
 	{
-		SetMaterial(PreviewMaterial);
+		SetMaterial(*AssetStorage->PipeMaterials.Find(PipeState::Preview_Valid));
 		StaticMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
 }
@@ -84,8 +85,6 @@ void APipe::FindNeighbourBuiltPipes()
 
 	for (const auto& object : nearObjects)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("pipe candidate: %s"), *object->GetName());
-
 		APipe* pipe = Cast<APipe>(object);
 		if (pipe == nullptr)
 		{
@@ -100,8 +99,6 @@ void APipe::FindNeighbourBuiltPipes()
 			continue;
 		}
 
-		UE_LOG(LogTemp, Warning, TEXT("Add pipe: %s as neighbour"), *object->GetName());
-
 		Neighbours.emplace_back(pipe);
 		pipe->LinkNeighbour(this);
 	}
@@ -109,8 +106,6 @@ void APipe::FindNeighbourBuiltPipes()
 
 void APipe::AdjustShapeAndRotationToNeighbours()
 {
-	UE_LOG(LogTemp, Warning, TEXT("AdjustShapeToNeighbours: size of neighbours = %d"), Neighbours.size());
-
 	switch (Neighbours.size())
 	{
 	case 0: StaticMesh->SetStaticMesh(*AssetStorage->PipeMeshes.Find(PipeType::Straight)); break;
@@ -124,40 +119,43 @@ void APipe::AdjustShapeAndRotationToNeighbours()
 		break;
 	}
 	}
-
-	UE_LOG(LogTemp, Warning, TEXT("AdjustShapeToNeighbours END"));
 }
 
 void APipe::OneNeighbour()
 {
-	UE_LOG(LogTemp, Warning, TEXT("OneNeighbour"));
 	FVector resultant = getResultant();
-	//SetActorRelativeRotation(getDesiredRotationFromVec(resultant));
-	SetActorRotation(FQuat::Identity);
-	SetActorRotation(getDesiredRotationFromVec(resultant));
+	getDesiredRotationFromVec(resultant);
 	StaticMesh->SetStaticMesh(*AssetStorage->PipeMeshes.Find(PipeType::Straight));
 }
 
 void APipe::TwoNeighbours()
 {
-	UE_LOG(LogTemp, Warning, TEXT("TwoNeighbours"));
 	FVector resultant = getResultant();
-	StaticMesh->SetStaticMesh(*AssetStorage->PipeMeshes.Find(PipeType::Curve));
+	if (resultant.Size() <= EPSILON_FOR_DIST)
+	{
+		StaticMesh->SetStaticMesh(*AssetStorage->PipeMeshes.Find(PipeType::Straight));
+		auto direction = Neighbours[0]->GetActorLocation() - GetActorLocation();
+		direction.Normalize();
+		getDesiredRotationFromVec(direction);
+	}
+	else
+	{
+		StaticMesh->SetStaticMesh(*AssetStorage->PipeMeshes.Find(PipeType::Curve));
+		auto direction = UKismetMathLibrary::RotateAngleAxis(resultant, -45.0f, FVector(0.0f, 0.0f, 1.0f));
+		direction.Normalize();
+		getDesiredRotationFromVec(direction);
+	}
 }
 
 void APipe::ThreeNeighbours()
 {
-	UE_LOG(LogTemp, Warning, TEXT("ThreeNeighbours"));
 	FVector resultant = getResultant();
-	//SetActorRelativeRotation(getDesiredRotationFromVec(resultant));
-	SetActorRotation(FQuat::Identity);
-	SetActorRotation(getDesiredRotationFromVec(resultant));
+	getDesiredRotationFromVec(resultant);
 	StaticMesh->SetStaticMesh(*AssetStorage->PipeMeshes.Find(PipeType::T_Like));
 }
 
 void APipe::FourNeighbours()
 {
-	UE_LOG(LogTemp, Warning, TEXT("FourNeighbours"));
 	SetActorRotation(FQuat::Identity);
 	StaticMesh->SetStaticMesh(*AssetStorage->PipeMeshes.Find(PipeType::Cross));
 }
@@ -176,35 +174,25 @@ FVector APipe::getResultant()
 	return resultant;
 }
 
-FRotator APipe::getDesiredRotationFromVec(const FVector& vector)
+void APipe::getDesiredRotationFromVec(const FVector& vector)
 {
-	UE_LOG(LogTemp, Warning, TEXT("resultant vector: %s"), *vector.ToString());
-
+	SetActorRotation(FQuat::Identity);
 	if (std::abs(FVector::Dist(vector, NORTH)) <= EPSILON_FOR_DIST)
 	{
-		auto rotator = FRotator(0.0f, OFFSET_ROTATION * -3.0f, 0.0f );
-		UE_LOG(LogTemp, Warning, TEXT("NORTH rotator: %s"), *rotator.ToString());
-		return rotator;
+		SetActorRotation(FRotator(0.0f, OFFSET_ROTATION,  0.0f));
 	}
 	if (std::abs(FVector::Dist(vector, EAST)) <= EPSILON_FOR_DIST)
 	{
-		auto rotator = FRotator(0.0f, 0.0f, OFFSET_ROTATION * -2.0f);
-		UE_LOG(LogTemp, Warning, TEXT("EAST rotator: %s"), *rotator.ToString());
-		return rotator;
+		SetActorRotation(FRotator(0.0f, OFFSET_ROTATION * 2.0f, 0.0f));
 	}
 	if (std::abs(FVector::Dist(vector, -NORTH)) <= EPSILON_FOR_DIST)
 	{
-		auto rotator = FRotator(0.0f, -OFFSET_ROTATION , 0.0f);
-		UE_LOG(LogTemp, Warning, TEXT("SOUTH rotator: %s"), *rotator.ToString());
-		return rotator;
+		SetActorRotation(FRotator(0.0f, OFFSET_ROTATION * 3.0f, 0.0f));
 	}
 	if (std::abs(FVector::Dist(vector, -EAST)) <= EPSILON_FOR_DIST)
 	{
-		auto rotator = FRotator(0.0f, 0.0f, OFFSET_ROTATION * 4.0f);
-		UE_LOG(LogTemp, Warning, TEXT("WEST rotator: %s"), *rotator.ToString());
-		return rotator;
+		SetActorRotation(FRotator(0.0f, OFFSET_ROTATION * 4.0f, 0.0f));
 	}
-	return FRotator();
 }
 
 bool APipe::GetIsBuilt()
@@ -214,25 +202,32 @@ bool APipe::GetIsBuilt()
 
 void APipe::Build()
 {
-	UE_LOG(LogTemp, Warning, TEXT("build: %s"), *this->GetName());
 	IsBuilt = true;
-	SetMaterial(BuiltMaterial);
+	SetMaterial(*AssetStorage->PipeMaterials.Find(PipeState::NotConnected));
 	StaticMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 
 	FindNeighbourBuiltPipes();
+
+	UE_LOG(LogTemp, Warning, TEXT("Neighbours sizes: %d"), Neighbours.size());
 
 	std::vector<ASourcePipe*> sourcePipes;
 	std::vector<ATeamDestinationPipe*> destinationPipes;
 	std::vector<APipe*> chain;
 	checkIfConnected(chain, sourcePipes, destinationPipes);
 
+	UE_LOG(LogTemp, Warning, TEXT("pipes sizes: %d, %d"), sourcePipes.size(), destinationPipes.size());
+	if (!sourcePipes.empty() && !destinationPipes.empty())
+	{
+		setChainConnected(chain, sourcePipes, destinationPipes);
+	}
+
 	AdjustShapeAndRotationToNeighbours();
 }
 
 void APipe::checkIfConnected(
 	std::vector<APipe*>& chain, 
-	std::vector<ASourcePipe*> sources,
-	std::vector<ATeamDestinationPipe*> destinations)
+	std::vector<ASourcePipe*>& sources,
+	std::vector<ATeamDestinationPipe*>& destinations)
 {
 	for (const auto& neighbour : Neighbours)
 	{
@@ -242,15 +237,13 @@ void APipe::checkIfConnected(
 		}
 		if (auto source = Cast<ASourcePipe>(neighbour))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Found source: %s"), *source->GetName());
 			sources.emplace_back(source);
-			return;
+			UE_LOG(LogTemp, Warning, TEXT("Found source: %s, %d"), *source->GetName(), sources.size());
 		}
 		if (auto destination = Cast<ATeamDestinationPipe>(neighbour))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Found destination: %s"), *destination->GetName());
 			destinations.emplace_back(destination);
-			return;
+			UE_LOG(LogTemp, Warning, TEXT("Found destination: %s, %d"), *destination->GetName(), destinations.size());
 		}
 		if (std::find(chain.begin(), chain.end(), neighbour) != chain.end())
 		{
@@ -258,6 +251,26 @@ void APipe::checkIfConnected(
 		}
 		chain.emplace_back(neighbour);
 		neighbour->checkIfConnected(chain, sources, destinations);
+	}
+}
+
+void APipe::setChainConnected(
+	const std::vector<APipe*>& chain,
+	const std::vector<ASourcePipe*>& sources,
+	const std::vector<ATeamDestinationPipe*>& destinations)
+{
+	UE_LOG(LogTemp, Warning, TEXT("setChainConnected"));
+	for (auto pipe : chain)
+	{
+		pipe->SetMaterial(*AssetStorage->PipeMaterials.Find(PipeState::Connected));
+	}
+	for (auto pipe : sources)
+	{
+		pipe->SetMaterial(*AssetStorage->PipeMaterials.Find(PipeState::Connected));
+	}
+	for (auto pipe : destinations)
+	{
+		pipe->SetMaterial(*AssetStorage->PipeMaterials.Find(PipeState::Connected));
 	}
 }
 

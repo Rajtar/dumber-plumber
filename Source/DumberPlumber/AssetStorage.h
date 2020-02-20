@@ -23,7 +23,8 @@ enum class PipeState : uint8
 {
 	Connected,
 	NotConnected,
-	Preview
+	Preview_Valid,
+	Preview_Invalid
 };
 
 UCLASS(Blueprintable, BlueprintType)

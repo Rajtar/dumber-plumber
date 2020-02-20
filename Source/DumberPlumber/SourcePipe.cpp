@@ -5,7 +5,7 @@
 
 ASourcePipe::ASourcePipe() : Super()
 {
-
+	IsBuilt = true;
 }
 
 void ASourcePipe::AdjustShapeAndRotationToNeighbours()

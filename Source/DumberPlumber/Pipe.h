@@ -28,12 +28,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Mesh)
 		class UStaticMeshComponent* StaticMesh;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mesh)
-		class UMaterial* BuiltMaterial;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mesh)
-		class UMaterial* PreviewMaterial;
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -63,12 +57,17 @@ private:
 
 	FVector getResultant();
 
-	FRotator getDesiredRotationFromVec(const FVector& vector);
+	void getDesiredRotationFromVec(const FVector& vector);
 
 	void checkIfConnected(
 		std::vector<APipe*>& chain, 
-		std::vector<class ASourcePipe*> sources,
-		std::vector<class ATeamDestinationPipe*> destinations);
+		std::vector<class ASourcePipe*>& sources,
+		std::vector<class ATeamDestinationPipe*>& destinations);
+
+	void setChainConnected(
+		const std::vector<APipe*>& chain,
+		const std::vector<class ASourcePipe*>& sources,
+		const std::vector<class ATeamDestinationPipe*>& destinations);
 
 	std::vector<APipe*> Neighbours;
 
