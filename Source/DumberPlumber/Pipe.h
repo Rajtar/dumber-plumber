@@ -23,7 +23,11 @@ public:
 
 	void Build();
 
-	FVector DetermineLocation(FVector hitLocation);
+	FVector DetermineLocation(FVector hitLocation) const;
+
+	void AdjustPipePreview();
+
+	void ReleaseNeighbours();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Mesh)
 		class UStaticMeshComponent* StaticMesh;
@@ -45,6 +49,8 @@ private:
 
 	void LinkNeighbour(APipe* pipe);
 
+	void UnlinkNeighbour(APipe* pipe);
+
 	void FindNeighbourBuiltPipes();
 
 	void OneNeighbour();
@@ -57,7 +63,7 @@ private:
 
 	FVector getResultant();
 
-	void getDesiredRotationFromVec(const FVector& vector);
+	void setActorRotationFromVec(const FVector& vector);
 
 	void checkIfConnected(
 		std::vector<APipe*>& chain, 

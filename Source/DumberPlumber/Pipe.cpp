@@ -75,6 +75,13 @@ void APipe::LinkNeighbour(APipe* pipe)
 	AdjustShapeAndRotationToNeighbours();
 }
 
+void APipe::UnlinkNeighbour(APipe* pipe)
+{
+	Neighbours.erase(remove(Neighbours.begin(), Neighbours.end(), pipe), Neighbours.end());
+	AdjustShapeAndRotationToNeighbours();
+}
+
+
 void APipe::FindNeighbourBuiltPipes()
 {
 	TArray<AActor*> toIgnore;
@@ -124,7 +131,7 @@ void APipe::AdjustShapeAndRotationToNeighbours()
 void APipe::OneNeighbour()
 {
 	FVector resultant = getResultant();
-	getDesiredRotationFromVec(resultant);
+	setActorRotationFromVec(resultant);
 	StaticMesh->SetStaticMesh(*AssetStorage->PipeMeshes.Find(PipeType::Straight));
 }
 
@@ -136,21 +143,21 @@ void APipe::TwoNeighbours()
 		StaticMesh->SetStaticMesh(*AssetStorage->PipeMeshes.Find(PipeType::Straight));
 		auto direction = Neighbours[0]->GetActorLocation() - GetActorLocation();
 		direction.Normalize();
-		getDesiredRotationFromVec(direction);
+		setActorRotationFromVec(direction);
 	}
 	else
 	{
 		StaticMesh->SetStaticMesh(*AssetStorage->PipeMeshes.Find(PipeType::Curve));
 		auto direction = UKismetMathLibrary::RotateAngleAxis(resultant, -45.0f, FVector(0.0f, 0.0f, 1.0f));
 		direction.Normalize();
-		getDesiredRotationFromVec(direction);
+		setActorRotationFromVec(direction);
 	}
 }
 
 void APipe::ThreeNeighbours()
 {
 	FVector resultant = getResultant();
-	getDesiredRotationFromVec(resultant);
+	setActorRotationFromVec(resultant);
 	StaticMesh->SetStaticMesh(*AssetStorage->PipeMeshes.Find(PipeType::T_Like));
 }
 
@@ -174,24 +181,28 @@ FVector APipe::getResultant()
 	return resultant;
 }
 
-void APipe::getDesiredRotationFromVec(const FVector& vector)
+void APipe::setActorRotationFromVec(const FVector& vector)
 {
 	SetActorRotation(FQuat::Identity);
 	if (std::abs(FVector::Dist(vector, NORTH)) <= EPSILON_FOR_DIST)
 	{
 		SetActorRotation(FRotator(0.0f, OFFSET_ROTATION,  0.0f));
+		return;
 	}
 	if (std::abs(FVector::Dist(vector, EAST)) <= EPSILON_FOR_DIST)
 	{
 		SetActorRotation(FRotator(0.0f, OFFSET_ROTATION * 2.0f, 0.0f));
+		return;
 	}
 	if (std::abs(FVector::Dist(vector, -NORTH)) <= EPSILON_FOR_DIST)
 	{
 		SetActorRotation(FRotator(0.0f, OFFSET_ROTATION * 3.0f, 0.0f));
+		return;
 	}
 	if (std::abs(FVector::Dist(vector, -EAST)) <= EPSILON_FOR_DIST)
 	{
 		SetActorRotation(FRotator(0.0f, OFFSET_ROTATION * 4.0f, 0.0f));
+		return;
 	}
 }
 
@@ -206,22 +217,15 @@ void APipe::Build()
 	SetMaterial(*AssetStorage->PipeMaterials.Find(PipeState::NotConnected));
 	StaticMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 
-	FindNeighbourBuiltPipes();
-
-	UE_LOG(LogTemp, Warning, TEXT("Neighbours sizes: %d"), Neighbours.size());
-
 	std::vector<ASourcePipe*> sourcePipes;
 	std::vector<ATeamDestinationPipe*> destinationPipes;
 	std::vector<APipe*> chain;
 	checkIfConnected(chain, sourcePipes, destinationPipes);
 
-	UE_LOG(LogTemp, Warning, TEXT("pipes sizes: %d, %d"), sourcePipes.size(), destinationPipes.size());
 	if (!sourcePipes.empty() && !destinationPipes.empty())
 	{
 		setChainConnected(chain, sourcePipes, destinationPipes);
 	}
-
-	AdjustShapeAndRotationToNeighbours();
 }
 
 void APipe::checkIfConnected(
@@ -238,12 +242,10 @@ void APipe::checkIfConnected(
 		if (auto source = Cast<ASourcePipe>(neighbour))
 		{
 			sources.emplace_back(source);
-			UE_LOG(LogTemp, Warning, TEXT("Found source: %s, %d"), *source->GetName(), sources.size());
 		}
 		if (auto destination = Cast<ATeamDestinationPipe>(neighbour))
 		{
 			destinations.emplace_back(destination);
-			UE_LOG(LogTemp, Warning, TEXT("Found destination: %s, %d"), *destination->GetName(), destinations.size());
 		}
 		if (std::find(chain.begin(), chain.end(), neighbour) != chain.end())
 		{
@@ -259,7 +261,6 @@ void APipe::setChainConnected(
 	const std::vector<ASourcePipe*>& sources,
 	const std::vector<ATeamDestinationPipe*>& destinations)
 {
-	UE_LOG(LogTemp, Warning, TEXT("setChainConnected"));
 	for (auto pipe : chain)
 	{
 		pipe->SetMaterial(*AssetStorage->PipeMaterials.Find(PipeState::Connected));
@@ -274,7 +275,7 @@ void APipe::setChainConnected(
 	}
 }
 
-FVector APipe::DetermineLocation(FVector hitLocation)
+FVector APipe::DetermineLocation(FVector hitLocation) const
 {
 	hitLocation.Z = 0.0f;
 	auto location = GetTransform().GetLocation();
@@ -298,4 +299,20 @@ FVector APipe::DetermineLocation(FVector hitLocation)
 		return GetTransform().GetLocation() + EAST * distance;
 	}
 	return GetTransform().GetLocation() - EAST * distance;
+}
+
+void APipe::AdjustPipePreview()
+{
+	ReleaseNeighbours();
+	FindNeighbourBuiltPipes();
+	AdjustShapeAndRotationToNeighbours();
+}
+
+void APipe::ReleaseNeighbours()
+{
+	for (auto neighbour : Neighbours)
+	{
+		neighbour->UnlinkNeighbour(this);
+	}
+	Neighbours.clear();
 }

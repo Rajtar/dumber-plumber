@@ -46,6 +46,11 @@ void UBuildComponent::Update()
 		return;
 	}
 
+	if (ParentRef->GrabbedPipe == nullptr)
+	{
+		return;
+	}
+
 	TArray<FHitResult> hits = FindObejctsAroundRayInRange(100.0f);
 
 	if (hits.Num() == 0)
@@ -61,9 +66,11 @@ void UBuildComponent::Update()
 		return;
 	}
 
+	IsInBuildMode = true;
+
 	if (PipeRef != nullptr)
 	{
-		PipeRef->SetActorLocation(nearestBuiltPipe->DetermineLocation(nearestHitLocation));
+		AdjustPipePreview(nearestHitLocation, nearestBuiltPipe);
 	}
 	else
 	{
@@ -73,7 +80,6 @@ void UBuildComponent::Update()
 
 void UBuildComponent::LeftMousePressed()
 {
-	//UE_LOG(LogTemp, Warning, TEXT("LMB Pressed"));
 	if (PipeRef == nullptr)
 	{
 		return;
@@ -81,28 +87,47 @@ void UBuildComponent::LeftMousePressed()
 
 	PipeRef->Build();
 	PipeRef = nullptr;
+	ParentRef->GrabbedPipe->Destroy();
+	ParentRef->GrabbedPipe = nullptr;
+	IsInBuildMode = false;
 }
 
 void UBuildComponent::RightMousePressed()
 {
-	//UE_LOG(LogTemp, Warning, TEXT("RMB Pressed"));
 	IsRMBPressed = true;
 }
 
 void UBuildComponent::RightMouseReleased()
 {
 	IsRMBPressed = false;
+	IsInBuildMode = false;
 	if (PipeRef != nullptr)
 	{
+		PipeRef->ReleaseNeighbours();
 		PipeRef->Destroy();
 		PipeRef = nullptr;
 	}
-	//UE_LOG(LogTemp, Warning, TEXT("RMB Released"));
+}
+
+bool UBuildComponent::GetIsInBuildMode()
+{
+	return IsInBuildMode;
+}
+
+void UBuildComponent::AdjustPipePreview(const FVector& nearestHitLocation, const APipe* nearestBuiltPipe)
+{
+	auto newPipeLocation = nearestBuiltPipe->DetermineLocation(nearestHitLocation);
+	if (newPipeLocation == LastPipeLocation)
+	{
+		return;
+	}
+	PipeRef->SetActorLocation(newPipeLocation);
+	PipeRef->AdjustPipePreview();
+	LastPipeLocation = newPipeLocation;
 }
 
 void UBuildComponent::SpawnPipePreview(const FVector& spawnLocation, APipe* originPipeRef)
 {
-	//UE_LOG(LogTemp, Warning, TEXT("Spawn Pipe Preview"));
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	FVector location = originPipeRef->DetermineLocation(spawnLocation);

@@ -164,6 +164,11 @@ void ADumberPlumberCharacter::Tick(float DeltaSeconds)
 
 void ADumberPlumberCharacter::OnFire()
 {
+	if (BuildComponent->GetIsInBuildMode())
+	{
+		return;
+	}
+
 	if (Weapon == nullptr)
 	{
 		return;
