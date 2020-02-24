@@ -24,6 +24,8 @@ public:
 
 	void RightMouseReleased();
 
+	void ToggleDebugMode();
+
 	bool GetIsInBuildMode();
 
 protected:
@@ -33,13 +35,18 @@ protected:
 	class ADumberPlumberCharacter* ParentRef;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Pipe")
-	TSubclassOf<AActor> Pipe;
+	TSubclassOf<AActor> PipePreviewType;
 
-	class APipe* PipeRef = nullptr;
+	UPROPERTY(EditDefaultsOnly, Category = "Pipe")
+	TSubclassOf<AActor> PipeBuiltType;
+
+	class APipePreview* PipePreview = nullptr;
 
 	bool IsRMBPressed = false;
 
 	bool IsInBuildMode = false;
+
+	bool IsInDebugMode = false;
 
 public:	
 	// Called every frame
@@ -48,9 +55,11 @@ public:
 
 private:
 
-	void AdjustPipePreview(const FVector& nearestHitLocation, const APipe* nearestBuiltPipe);
+	void AdjustPipePreview(const FVector& nearestHitLocation, const class APipe* nearestBuiltPipe);
 
 	void SpawnPipePreview(const FVector& spawnLocation, class APipe* originPipeRef);
+
+	void SpawnPipeBuilt(const FVector& location, const FRotator& rotation);
 
 	TArray<FHitResult> FindObejctsAroundRayInRange(const float range) const;
 

@@ -1,7 +1,7 @@
 // Copyright 1998-2019 Epic Games, Inc. All Rights Reserved.
 
-#include "GameFramework/PawnMovementComponent.h"
 #include "DumberPlumberCharacter.h"
+#include "GameFramework/PawnMovementComponent.h"
 #include "DumberPlumberProjectile.h"
 #include "DumberPlumberPipeActor.h"
 #include "Animation/AnimInstance.h"
@@ -102,6 +102,8 @@ void ADumberPlumberCharacter::SetupPlayerInputComponent(class UInputComponent* P
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, BuildComponent, &UBuildComponent::LeftMousePressed);
 	PlayerInputComponent->BindAction("RightMouseButton", IE_Pressed, BuildComponent, &UBuildComponent::RightMousePressed);
 	PlayerInputComponent->BindAction("RightMouseButton", IE_Released, BuildComponent, &UBuildComponent::RightMouseReleased);
+
+	PlayerInputComponent->BindAction("ToggleDebugMode", IE_Pressed, BuildComponent, &UBuildComponent::ToggleDebugMode);
 
 	PlayerInputComponent->BindAction("Grab", IE_Pressed, this, &ADumberPlumberCharacter::UseFocusedInteractable);
 

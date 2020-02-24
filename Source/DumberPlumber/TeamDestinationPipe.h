@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Pipe.h"
+#include "PipeBuilt.h"
 #include "TeamDestinationPipe.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class DUMBERPLUMBER_API ATeamDestinationPipe : public APipe
+class DUMBERPLUMBER_API ATeamDestinationPipe : public APipeBuilt
 {
 	GENERATED_BODY()
 
@@ -20,5 +20,5 @@ public:
 
 protected:
 
-    void AdjustShapeAndRotationToNeighbours() final override;
+    void AdjustShapeAndRotationToNeighbours(const TArray<APipe*>& neighbours) final override;
 };

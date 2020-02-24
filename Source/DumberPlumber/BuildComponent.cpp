@@ -5,6 +5,8 @@
 #include "DumberPlumberCharacter.h"
 #include "DumberPlumberPipeActor.h"
 #include "Pipe.h"
+#include "PipePreview.h"
+#include "PipeBuilt.h"
 #include "Components/SceneComponent.h"
 #include "Engine/World.h"
 #include "Math/NumericLimits.h"
@@ -46,9 +48,12 @@ void UBuildComponent::Update()
 		return;
 	}
 
-	if (ParentRef->GrabbedPipe == nullptr)
+	if (!IsInDebugMode)
 	{
-		return;
+		if (ParentRef->GrabbedPipe == nullptr)
+		{
+			return;
+		}
 	}
 
 	TArray<FHitResult> hits = FindObejctsAroundRayInRange(100.0f);
@@ -68,7 +73,7 @@ void UBuildComponent::Update()
 
 	IsInBuildMode = true;
 
-	if (PipeRef != nullptr)
+	if (PipePreview != nullptr)
 	{
 		AdjustPipePreview(nearestHitLocation, nearestBuiltPipe);
 	}
@@ -80,15 +85,22 @@ void UBuildComponent::Update()
 
 void UBuildComponent::LeftMousePressed()
 {
-	if (PipeRef == nullptr)
+	if (PipePreview == nullptr)
 	{
 		return;
 	}
 
-	PipeRef->Build();
-	PipeRef = nullptr;
-	ParentRef->GrabbedPipe->Destroy();
-	ParentRef->GrabbedPipe = nullptr;
+	SpawnPipeBuilt(PipePreview->GetActorLocation(), PipePreview->GetActorRotation());
+	PipePreview->ReleaseNeighbours();
+	PipePreview->Destroy();
+	PipePreview = nullptr;
+	LastPipeLocation = FVector::ZeroVector;
+
+	if (ParentRef->GrabbedPipe != nullptr)
+	{
+		ParentRef->GrabbedPipe->Destroy();
+		ParentRef->GrabbedPipe = nullptr;
+	}
 	IsInBuildMode = false;
 }
 
@@ -101,12 +113,19 @@ void UBuildComponent::RightMouseReleased()
 {
 	IsRMBPressed = false;
 	IsInBuildMode = false;
-	if (PipeRef != nullptr)
+	if (PipePreview != nullptr)
 	{
-		PipeRef->ReleaseNeighbours();
-		PipeRef->Destroy();
-		PipeRef = nullptr;
+		PipePreview->ReleaseNeighbours();
+		PipePreview->Destroy();
+		PipePreview = nullptr;
+		LastPipeLocation = FVector::ZeroVector;
 	}
+}
+
+void UBuildComponent::ToggleDebugMode()
+{
+	IsInDebugMode = !IsInDebugMode;
+	UE_LOG(LogTemp, Warning, TEXT("Toggle Debug Mode current state: %s"), IsInDebugMode ? TEXT("True") : TEXT("False"));
 }
 
 bool UBuildComponent::GetIsInBuildMode()
@@ -121,8 +140,8 @@ void UBuildComponent::AdjustPipePreview(const FVector& nearestHitLocation, const
 	{
 		return;
 	}
-	PipeRef->SetActorLocation(newPipeLocation);
-	PipeRef->AdjustPipePreview();
+	PipePreview->SetActorLocation(newPipeLocation);
+	PipePreview->AdjustPipePreview();
 	LastPipeLocation = newPipeLocation;
 }
 
@@ -132,7 +151,14 @@ void UBuildComponent::SpawnPipePreview(const FVector& spawnLocation, APipe* orig
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	FVector location = originPipeRef->DetermineLocation(spawnLocation);
 	FRotator rotation = FRotator(90.0f, 0.0f, 0.0f);
-	PipeRef = GetWorld()->SpawnActor<APipe>(Pipe, location, rotation, SpawnParams);
+	PipePreview = GetWorld()->SpawnActor<APipePreview>(PipePreviewType, location, rotation, SpawnParams);
+}
+
+void UBuildComponent::SpawnPipeBuilt(const FVector& location, const FRotator& rotation)
+{
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	GetWorld()->SpawnActor<APipeBuilt>(PipeBuiltType, location, rotation, SpawnParams);
 }
 
 TArray<FHitResult> UBuildComponent::FindObejctsAroundRayInRange(const float range) const

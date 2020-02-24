@@ -5,9 +5,9 @@
 
 ASourcePipe::ASourcePipe() : Super()
 {
-	IsBuilt = true;
+	SetReplicates(true);
 }
 
-void ASourcePipe::AdjustShapeAndRotationToNeighbours()
+void ASourcePipe::AdjustShapeAndRotationToNeighbours(const TArray<APipe*>& neighbours)
 {
 }

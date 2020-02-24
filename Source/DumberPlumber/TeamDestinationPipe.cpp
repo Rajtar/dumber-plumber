@@ -5,9 +5,9 @@
 
 ATeamDestinationPipe::ATeamDestinationPipe() : Super()
 {
-	IsBuilt = true;
+	SetReplicates(true);
 }
 
-void ATeamDestinationPipe::AdjustShapeAndRotationToNeighbours()
+void ATeamDestinationPipe::AdjustShapeAndRotationToNeighbours(const TArray<APipe*>& neighbours)
 {
 }
