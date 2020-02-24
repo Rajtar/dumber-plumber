@@ -61,9 +61,14 @@ private:
 
 	void SpawnPipeBuilt(const FVector& location, const FRotator& rotation);
 
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerSpawnPipeBuilt(const FVector& location, const FRotator& rotation);
+
 	TArray<FHitResult> FindObejctsAroundRayInRange(const float range) const;
 
 	class APipe* FindNearestPipe(const TArray<FHitResult>& hits, FVector& outNearestHit);
+
+	void ClearPreview();
 
 	FVector LastPipeLocation;
 

@@ -11,6 +11,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include <algorithm>
 #include <Runtime\Engine\Classes\Engine\Engine.h>
+#include "Net/UnrealNetwork.h"
 
 namespace {
 	const float THRESHOLD = pow(2.0, 0.5) / 2.0f;
@@ -31,6 +32,8 @@ APipe::APipe()
 	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
 	RootComponent = StaticMesh;
 	StaticMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	SetReplicates(true);
 }
 
 // Called when the game starts or when spawned
@@ -214,4 +217,11 @@ FVector APipe::DetermineLocation(FVector hitLocation) const
 		return GetTransform().GetLocation() + EAST * distance;
 	}
 	return GetTransform().GetLocation() - EAST * distance;
+}
+
+void APipe::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(APipe, StaticMesh);
 }

@@ -106,18 +106,9 @@ void APipeBuilt::setChainConnected(
 	}
 }
 
-void APipeBuilt::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(APipeBuilt, Neighbours);
-}
-
 void APipeBuilt::LinkNeighbour(APipe* pipe)
 {
-	UE_LOG(LogTemp, Warning, TEXT("1 LinkNeighbour for %s number of neighbours: %d"), *this->GetName(), Neighbours.Num());
 	Neighbours.Add(pipe);
-	UE_LOG(LogTemp, Warning, TEXT("2 LinkNeighbour for %s number of neighbours: %d"), *this->GetName(), Neighbours.Num());
 	AdjustShapeAndRotationToNeighbours(Neighbours);
 }
 
@@ -125,4 +116,11 @@ void APipeBuilt::UnlinkNeighbour(APipe* pipe)
 {
 	Neighbours.Remove(pipe);
 	AdjustShapeAndRotationToNeighbours(Neighbours);
+}
+
+void APipeBuilt::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(APipeBuilt, Neighbours);
 }

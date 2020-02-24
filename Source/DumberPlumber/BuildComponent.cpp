@@ -10,6 +10,7 @@
 #include "Components/SceneComponent.h"
 #include "Engine/World.h"
 #include "Math/NumericLimits.h"
+#include "Net/UnrealNetwork.h"
 
 
 namespace {
@@ -19,7 +20,7 @@ namespace {
 // Sets default values for this component's properties
 UBuildComponent::UBuildComponent()
 {
-	
+	SetIsReplicated(true);
 }
 
 
@@ -91,10 +92,7 @@ void UBuildComponent::LeftMousePressed()
 	}
 
 	SpawnPipeBuilt(PipePreview->GetActorLocation(), PipePreview->GetActorRotation());
-	PipePreview->ReleaseNeighbours();
-	PipePreview->Destroy();
-	PipePreview = nullptr;
-	LastPipeLocation = FVector::ZeroVector;
+	ClearPreview();
 
 	if (ParentRef->GrabbedPipe != nullptr)
 	{
@@ -115,10 +113,7 @@ void UBuildComponent::RightMouseReleased()
 	IsInBuildMode = false;
 	if (PipePreview != nullptr)
 	{
-		PipePreview->ReleaseNeighbours();
-		PipePreview->Destroy();
-		PipePreview = nullptr;
-		LastPipeLocation = FVector::ZeroVector;
+		ClearPreview();
 	}
 }
 
@@ -156,9 +151,26 @@ void UBuildComponent::SpawnPipePreview(const FVector& spawnLocation, APipe* orig
 
 void UBuildComponent::SpawnPipeBuilt(const FVector& location, const FRotator& rotation)
 {
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	GetWorld()->SpawnActor<APipeBuilt>(PipeBuiltType, location, rotation, SpawnParams);
+	if (GetOwnerRole() == ROLE_Authority)
+	{
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		GetWorld()->SpawnActor<APipeBuilt>(PipeBuiltType, location, rotation, SpawnParams);
+	}
+	else
+	{
+		ServerSpawnPipeBuilt(location, rotation);
+	}
+}
+
+void UBuildComponent::ServerSpawnPipeBuilt_Implementation(const FVector& location, const FRotator& rotation)
+{
+	SpawnPipeBuilt(location, rotation);
+}
+
+bool UBuildComponent::ServerSpawnPipeBuilt_Validate(const FVector& location, const FRotator& rotation)
+{
+	return true;
 }
 
 TArray<FHitResult> UBuildComponent::FindObejctsAroundRayInRange(const float range) const
@@ -196,4 +208,12 @@ APipe* UBuildComponent::FindNearestPipe(const TArray<FHitResult>& hits, FVector&
 		}
 	}
 	return nearestBuiltPipe;
+}
+
+void UBuildComponent::ClearPreview()
+{
+	PipePreview->ReleaseNeighbours();
+	PipePreview->Destroy();
+	PipePreview = nullptr;
+	LastPipeLocation = FVector::ZeroVector;
 }

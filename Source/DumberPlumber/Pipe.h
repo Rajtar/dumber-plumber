@@ -25,7 +25,7 @@ public:
 
 	virtual void UnlinkNeighbour(APipe* pipe);
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Mesh)
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category = Mesh)
 	class UStaticMeshComponent* StaticMesh;
 
 protected:

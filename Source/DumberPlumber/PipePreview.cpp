@@ -27,6 +27,7 @@ void APipePreview::AdjustPipePreview()
 
 void APipePreview::ReleaseNeighbours()
 {
+	UE_LOG(LogTemp, Warning, TEXT("ReleaseNeighbours: %d"), Neighbours.Num());
 	for (auto neighbour : Neighbours)
 	{
 		neighbour->UnlinkNeighbour(this);
