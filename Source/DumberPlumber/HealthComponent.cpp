@@ -31,7 +31,6 @@ void UHealthComponent::BeginPlay()
 
 void UHealthComponent::HealthChanged()
 {
-	UE_LOG(LogTemp, Warning, TEXT("HealthChanged"));
 	auto plumber = (ADumberPlumberCharacter*)GetOwner();
 	if (plumber)
 	{

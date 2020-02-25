@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 
-#include <vector>
+#include "AssetStorage.h"
 
 #include "Pipe.generated.h"
 
@@ -25,8 +25,11 @@ public:
 
 	virtual void UnlinkNeighbour(APipe* pipe);
 
-	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category = Mesh)
+	UPROPERTY(Replicated)
 	class UStaticMeshComponent* StaticMesh;
+
+	//UPROPERTY(ReplicatedUsing = TypeChanged_Client)
+	PipeType PipeTypeE;
 
 protected:
 	// Called when the game starts or when spawned
@@ -53,4 +56,7 @@ private:
 	FVector getResultant(const TArray<APipe*>& neighbours);
 
 	void setActorRotationFromVec(const FVector& vector);
+
+	UFUNCTION()
+	void TypeChanged_Client();
 };

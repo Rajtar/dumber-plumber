@@ -5,13 +5,14 @@
 #include "Pipe.h"
 #include "SourcePipe.h"
 #include "TeamDestinationPipe.h"
-#include "AssetStorage.h"
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 
 
 APipeBuilt::APipeBuilt() : Super()
 {
 	SetReplicates(true);
+	SetReplicateMovement(true);
 }
 
 void APipeBuilt::BeginPlay()
@@ -26,6 +27,11 @@ void APipeBuilt::BeginPlay()
 
 void APipeBuilt::Build()
 {
+	if (BuildSound != NULL)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, BuildSound, GetActorLocation());
+	}
+
 	if (Role < ROLE_Authority)
 	{
 		ServerBuild();

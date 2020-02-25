@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Pipe.h"
+#include <vector>
 #include "PipeBuilt.generated.h"
 
 /**
@@ -40,6 +41,9 @@ protected:
 		const std::vector<class ATeamDestinationPipe*>& destinations);
 
 	void LinkNeighbour(APipe* pipe) override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	class USoundBase* BuildSound;
 
 private:
 

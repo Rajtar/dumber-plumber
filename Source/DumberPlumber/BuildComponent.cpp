@@ -91,6 +91,11 @@ void UBuildComponent::LeftMousePressed()
 		return;
 	}
 
+	if (!PipePreview->GetCanBeBuilt())
+	{
+		return;
+	}
+
 	SpawnPipeBuilt(PipePreview->GetActorLocation(), PipePreview->GetActorRotation());
 	ClearPreview();
 

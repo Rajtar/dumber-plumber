@@ -23,6 +23,8 @@ public:
 
     void UnlinkNeighbour(APipe* pipe) override;
 
+    bool GetCanBeBuilt();
+
 protected:
 
     virtual void BeginPlay() override;
@@ -30,6 +32,10 @@ protected:
     void LinkNeighbour(APipe* pipe) override;
 
 private:
+
+    void checkIfOverlaps();
+
+    bool CanBeBuilt = true;
 
     TArray<APipe*> Neighbours;
 };

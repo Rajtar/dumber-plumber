@@ -4,7 +4,6 @@
 #include "Pipe.h"
 #include "SourcePipe.h"
 #include "TeamDestinationPipe.h"
-#include "AssetStorage.h"
 #include "PipeBuilt.h"
 
 #include "Kismet/KismetSystemLibrary.h"
@@ -34,6 +33,7 @@ APipe::APipe()
 	StaticMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	SetReplicates(true);
+	SetReplicateMovement(true);
 }
 
 // Called when the game starts or when spawned
@@ -47,6 +47,8 @@ void APipe::BeginPlay()
 	{
 		UE_LOG(LogTemp, Error, TEXT("Game Singleton is null"));
 	}
+
+	PipeTypeE = PipeType::Straight;
 }
 
 void APipe::SetMaterial(UMaterial* material)
@@ -102,7 +104,12 @@ void APipe::AdjustShapeAndRotationToNeighbours(const TArray<APipe*>& neighbours)
 	UE_LOG(LogTemp, Warning, TEXT("Number of neighbours: %d"), neighbours.Num());
 	switch (neighbours.Num())
 	{
-	case 0: StaticMesh->SetStaticMesh(*AssetStorage->PipeMeshes.Find(PipeType::Straight)); break;
+	case 0: 
+	{
+		PipeTypeE = PipeType::Straight;
+		StaticMesh->SetStaticMesh(*Cast<UAssetStorage>(GEngine->GameSingleton)->PipeMeshes.Find(PipeTypeE));
+		break;
+	}
 	case 1: OneNeighbour(neighbours); break;
 	case 2: TwoNeighbours(neighbours); break;
 	case 3: ThreeNeighbours(neighbours); break;
@@ -119,7 +126,8 @@ void APipe::OneNeighbour(const TArray<APipe*>& neighbours)
 {
 	FVector resultant = getResultant(neighbours);
 	setActorRotationFromVec(resultant);
-	StaticMesh->SetStaticMesh(*AssetStorage->PipeMeshes.Find(PipeType::Straight));
+	PipeTypeE = PipeType::Straight;
+	StaticMesh->SetStaticMesh(*Cast<UAssetStorage>(GEngine->GameSingleton)->PipeMeshes.Find(PipeTypeE));
 }
 
 void APipe::TwoNeighbours(const TArray<APipe*>& neighbours)
@@ -127,14 +135,16 @@ void APipe::TwoNeighbours(const TArray<APipe*>& neighbours)
 	FVector resultant = getResultant(neighbours);
 	if (resultant.Size() <= EPSILON_FOR_DIST)
 	{
-		StaticMesh->SetStaticMesh(*AssetStorage->PipeMeshes.Find(PipeType::Straight));
+		PipeTypeE = PipeType::Straight;
+		StaticMesh->SetStaticMesh(*Cast<UAssetStorage>(GEngine->GameSingleton)->PipeMeshes.Find(PipeTypeE));
 		auto direction = neighbours[0]->GetActorLocation() - GetActorLocation();
 		direction.Normalize();
 		setActorRotationFromVec(direction);
 	}
 	else
 	{
-		StaticMesh->SetStaticMesh(*AssetStorage->PipeMeshes.Find(PipeType::Curve));
+		PipeTypeE = PipeType::Curve;
+		StaticMesh->SetStaticMesh(*Cast<UAssetStorage>(GEngine->GameSingleton)->PipeMeshes.Find(PipeTypeE));
 		auto direction = UKismetMathLibrary::RotateAngleAxis(resultant, -45.0f, FVector(0.0f, 0.0f, 1.0f));
 		direction.Normalize();
 		setActorRotationFromVec(direction);
@@ -145,13 +155,15 @@ void APipe::ThreeNeighbours(const TArray<APipe*>& neighbours)
 {
 	FVector resultant = getResultant(neighbours);
 	setActorRotationFromVec(resultant);
-	StaticMesh->SetStaticMesh(*AssetStorage->PipeMeshes.Find(PipeType::T_Like));
+	PipeTypeE = PipeType::T_Like;
+	StaticMesh->SetStaticMesh(*Cast<UAssetStorage>(GEngine->GameSingleton)->PipeMeshes.Find(PipeTypeE));
 }
 
 void APipe::FourNeighbours(const TArray<APipe*>& neighbours)
 {
 	SetActorRotation(FQuat::Identity);
-	StaticMesh->SetStaticMesh(*AssetStorage->PipeMeshes.Find(PipeType::Cross));
+	PipeTypeE = PipeType::Cross;
+	StaticMesh->SetStaticMesh(*Cast<UAssetStorage>(GEngine->GameSingleton)->PipeMeshes.Find(PipeTypeE));
 }
 
 FVector APipe::getResultant(const TArray<APipe*>& neighbours)
@@ -224,4 +236,20 @@ void APipe::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePro
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(APipe, StaticMesh);
+}
+
+void APipe::TypeChanged_Client()
+{
+	//if (AssetStorage == nullptr)
+	//{
+	//	UE_LOG(LogTemp, Error, TEXT("Game Singleton is null"));
+	//}
+	auto mesh = *Cast<UAssetStorage>(GEngine->GameSingleton)->PipeMeshes.Find(PipeTypeE);
+
+	if(mesh == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("mesh is null"));
+	}
+
+	StaticMesh->SetStaticMesh(mesh);
 }
